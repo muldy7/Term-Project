@@ -28,12 +28,12 @@ controller1=Controller(1600,5,encoder1)
 Kp=1   # await a Kp value from the computer
 controller1.set_Kp(Kp)
 
-controller1.set_setpoint()
+#controller1.set_setpoint()
 
- for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
+for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
         utime.sleep_ms(10)  # sleep for 10 ms
-        controller1.input_obj.read()    # run the controller
-        meas_output=controller1.input_obj.pos   # set the measured output 
+        controller1.output_fun.read()    # run the controller
+        meas_output=controller1.output_fun.pos   # set the measured output 
         controller1.run(meas_output)    # run the controller with the new measured output
         PWM=controller1.PWM # set a new PWM from the conroller run function
         
