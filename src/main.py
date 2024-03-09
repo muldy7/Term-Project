@@ -1,6 +1,8 @@
 """!
 @file nucleo_main.py
 
+This has mostly been converted to a test code we should probably grab a main.py from lab3 or lab4 for testing 
+
 This file contains code that was stored on our group's Nucleo board to generate the motor step-response. 
 This file was called by the code on our computer and read through the serial port to generate graphs of our step-response.
 The file below imports the three different classes we had previoulsy set up to run the motor. 
@@ -23,7 +25,8 @@ motor1=MotorDriver('PC1','PA0','PA1',5)
 
 encoder1=EncoderReader('PC6','PC7',8)
 
-controller1=Controller(733,1,encoder1)
+controller1=Controller(733,1,encoder1)  # one rotation of the device is 4 rotations of the motor, 
+                                        # so 180 degrees is 2X whatever how many encoder tics two rotations are
 
 
 while True:
@@ -51,14 +54,20 @@ while True:
             utime.sleep_ms(10)  # sleep for 10 ms
             controller1.output_fun.read()    # run the controller
             meas_output=controller1.output_fun.pos   # set the measured output
-            print('Encoder Value: ' + str(meas_output))
             controller1.run(-1*meas_output)    # run the controller with the new measured output
-            print(meas_output)
             PWM=controller1.PWM # set a new PWM from the conroller run function
+
+            print(meas_output)
+            print('Encoder Value: ' + str(meas_output)) # these prints will mess up the GUI just for testing
             print('PWM: ' + str(controller1.PWM))
 
             motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
-            
+
+        # test print for the steady state error
+        ss_error = controller1.setpoint - controller1.output_fun.read() # this should give us the steady state error
+
+        print('Steady State Error: ' + ss_error)    # this value will be in encoder tics
+
         controller1.output_fun.zero()    # at the end of the loop disable the motor, output_fun is encoder1
         motor1.set_duty_cycle(0)
 #         controller1.step_response() # run out function that prints the values of the step response to the computer
