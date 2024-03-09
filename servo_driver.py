@@ -14,16 +14,22 @@ tch1 = t.channel(2,pyb.Timer.PWM, pin=servo_pin)  #start PWM on the timer channe
 t.prescaler(80) #set prescaler to get clock frquency to 1 Mhz, not 80
 #t.period(19999) # sets the period to be 1 ms, so pulse width can be set in units of ms
 
-while True :  
-    try:
-        #set the pulse width 
-        tch1.pulse_width(1500)
-        time.sleep(3)
-        tch1.pulse_width(2400)
-        time.sleep(3)
-    except KeyboardInterrupt:
-        tch1.pulse_width(0)
-        break
+# while True :  
+#     try:
+#         #set the pulse width 
+#         tch1.pulse_width(1500)
+#         time.sleep(3)
+#         tch1.pulse_width(2400)
+#         time.sleep(3)
+#     except KeyboardInterrupt:
+#         tch1.pulse_width(0)
+#         break
     
-    
+tch1.pulse_width(1500)
+time.sleep(3)
+tch1.pulse_width(2400)
+time.sleep(3)
+tch1.pulse_width(1500)
+time.sleep(3)
+tch1.pulse_width(0)
 
