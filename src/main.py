@@ -23,13 +23,15 @@ motor1=MotorDriver('PC1','PA0','PA1',5)
 
 encoder1=EncoderReader('PC6','PC7',8)
 
-controller1=Controller(6000,1,encoder1)
+controller1=Controller(733,1,encoder1)
 
 
 while True:
     print('awaiting input') # send to computer to alert the board is ready for a Kp value
     Kp=float(input('Input a Value for Kp: '))   # await a Kp value from the computer
     controller1.set_Kp(Kp)  # set the controller Kp value
+    set_point=float(input('Input a Setpoint: '))   # await a Kp value from the computer
+    controller1.set_setpoint(set_point)  # set the controller Kp value
     
     #motor1.set_duty_cycle(-50)
     try:
@@ -59,7 +61,7 @@ while True:
             
         controller1.output_fun.zero()    # at the end of the loop disable the motor, output_fun is encoder1
         motor1.set_duty_cycle(0)
-        controller1.step_response() # run out function that prints the values of the step response to the computer
+#         controller1.step_response() # run out function that prints the values of the step response to the computer
     except KeyboardInterrupt:
          motor1.set_duty_cycle(0)
          break
