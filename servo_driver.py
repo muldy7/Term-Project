@@ -3,7 +3,7 @@ import time
 import pyb
 
 
-class Servo_Driver:
+class ServoDriver:
     def __init__ (self, servo_pin, timer_channel):
 
         servo_pin = getattr(pyb.Pin.board, servo_pin) # get the pin value for the pin store in en_pin
