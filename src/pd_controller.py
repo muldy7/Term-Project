@@ -16,7 +16,7 @@ along with setting the setpoint and Kp value of the control loop.
 # changing the date would allow us to do a good job taking note of changes
 
 
-class Controller:
+class PD_Controller:
     
     def __init__ (self, setpoint, Kp, Kd,read_fun):
         """! 
@@ -34,10 +34,11 @@ class Controller:
         self.output_fun=read_fun
         self.pos_output=[]
         self.Kd = Kd
-        self.T = 0.01   # this is the trigger rate for the controller, going to assume like 1 ms but we can test
+        self.T = 0.001   # this is the trigger rate for the controller, rough estimate
         self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
-        self.err = 0
+        #self.err = 0
         self.prev_err = 0 # previous error value for delta_err calculation
+        self.err = 51 # for initilization
         
     def run(self,meas_output):
         """!
@@ -48,8 +49,8 @@ class Controller:
         # create the equation that runs the control loop
         self.err = self.setpoint - meas_output
         self.delta_err = self.err - self.prev_err
-        self.PWM=self.Kp*(self.err) + self.Kd*(self.delta_err/self.T)    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
-        self.pos_output.append(meas_output)
+        self.PWM=self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
+        #self.pos_output.append(meas_output)
         self.prev_err = self.err
     
     def set_setpoint(self,setpoint):
@@ -68,7 +69,7 @@ class Controller:
         """
         self.Kp=Kp
 
-    def set_Kp(self,Kd):
+    def set_Kd(self,Kd):
         """!
         This function sets the Kd value for the controller object.
     
@@ -79,8 +80,20 @@ class Controller:
     def step_response(self):
         print('start')
         for i in range(len(self.pos_output)):
-            print(i*10,self.pos_output[i])
+            print(i*3.333,self.pos_output[i])			# does a clock tick every milisecond
         print('end')
+        
+    def reset_loop(self):
+        """!
+        This function resets the calculations for a new control loop. 
+        This function can be used in conjuction with encoderX.read() & set_setpoint() for a new control loop of a different angle
+
+        """
+        self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
+        self.prev_err = 0 # previous error value for delta_err calculation
+
+        # could also have it call encoderX.zero() so it's done in one function?
+        self.output_fun.zero()  # we can try and see if works
 
 
     # add reset loop here

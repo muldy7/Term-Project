@@ -83,7 +83,7 @@ if __name__ == "__main__":  # test code contained below
 #                     motor1.set_duty_cycle(perc)  
 #                     time.sleep(0.05)
         try:
-            motor1.set_duty_cycle(99)
+            motor1.set_duty_cycle(-25)
             time.sleep(0.05)
             
         except KeyboardInterrupt:

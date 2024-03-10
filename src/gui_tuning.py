@@ -5,6 +5,7 @@ that can send a signal to the microcontroller to run a step response. The user w
 value and send that to a microcontroller where a Controller Object will read and interpret the data
 from the motor.
 
+Can send Kp, Kd, and a setpoint to test our motor moving at different setpoints
 The code used in main.py for our microcontroller can be found in the nucleo_main.py file in our Doxygen and GitHub documentation. 
 
 This file is uses code from lab0example.py file on on Cantvas and an example found at:
@@ -27,7 +28,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2Tk)
     
 
-def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry):	# give it entry for entry.get()
+def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	# give it entry and entry2 for entry.get()
     """!
     This function retrieves the data from the microcontroller to create the plot of the step response.
     The function first sens ASCII digits to the controller to stop any running program, get the controller into
@@ -61,6 +62,8 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry):	# give it entr
     
     # using entry.get() will retrieve the current number in the entry box
     kp = entry.get()
+    kd = entry2.get()	# added a second entry
+    set_point = entry3.get()
     try:
         float(kp)
     except ValueError:  # test if the user doesn't enter a valid number
@@ -74,8 +77,13 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry):	# give it entr
         if value == 'awaiting input' and enter == 0:    # wait till the board prints 'awaiting input'
             ser.write(bytes(str(kp).encode('utf-8')))	# this is where kp is used, sent to the input function waiting on the board
             ser.write(bytearray('\x0D','ascii'))    # send an enter to the board
+            ser.write(bytes(str(kd).encode('utf-8')))	# this is where kd is used, sent to the input function waiting on the board
+            ser.write(bytearray('\x0D','ascii'))    # send an enter to the board
+            ser.write(bytes(str(set_point).encode('utf-8')))	# this is where set_point is used, sent to the input function waiting on the board
+            ser.write(bytearray('\x0D','ascii'))    # send an enter to the board
             print('starting a step response')
             enter = 1
+            
         if value == 'start':    # start signals the start of step-response values from the board
             start=1
             print("reading!")
@@ -106,12 +114,12 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry):	# give it entr
     color1 = random.choice(colors)  # create a random color choice
 
     # plot the step response
-    plot_axes.plot(time, pos, label = 'Measured Response Data, kp: '+ kp, color = color1, marker = '.' )   
+    plot_axes.plot(time, pos, label = 'Measured Response Data, kp: '+ kp + ' kd: ' + kd + 'sp: ' + set_point, color = color1, marker = '.' )   
     plot_axes.set_xlabel(xlabel)
     plot_axes.set_ylabel(ylabel)
     plot_axes.grid(True)
     plot_axes.legend()
-    plot_axes.axis([0, 750, 0, 4000])
+    plot_axes.axis([0, 1500, -8000, 8000])
     plot_canvas.draw()
     
 
@@ -144,10 +152,14 @@ def tk_matplot(plot_function, xlabel, ylabel, title):
     # Create the buttons that run tests, clear the screen, and exit the program
     entry = tkinter.Entry(master=tk_root, textvariable='')	# this creates the entry box
     
+    entry2 = tkinter.Entry(master=tk_root, textvariable='')	# this creates the entry box
+    
+    entry3 = tkinter.Entry(master=tk_root, textvariable='')
+    
     # the eneter button takes the kp value and sends it to run
     button_enter = tkinter.Button(master=tk_root,
                                   text="Enter Kp Value and Run", command=lambda: plot_function(axes, canvas,
-                                                              xlabel, ylabel, entry))
+                                                              xlabel, ylabel, entry, entry2,entry3))
    
     button_quit = tkinter.Button(master=tk_root,
                                  text="Quit",
@@ -163,6 +175,8 @@ def tk_matplot(plot_function, xlabel, ylabel, title):
     button_clear.grid(row=2, column=2)
     button_quit.grid(row=2, column=3)
     entry.grid(row = 2, column = 0)
+    entry2.grid(row = 3, column = 0)
+    entry3.grid(row = 4, column = 0)
     button_enter.grid(row=2, column = 1)
 
     # This function runs the program until the user decides to quit

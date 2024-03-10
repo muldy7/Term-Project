@@ -115,7 +115,7 @@ class PID_Controller:
 
 if __name__ == "__main__":  # test code contained below
     encoder1 = []
-    controller1 = PID_Controller(100,.1,.1,0.0001,encoder1) # i guess we wont want PID becuase I will never be zero
+    controller1 = PID_Controller(100,.1,.1,0.000,encoder1) # i guess we wont want PID becuase I will never be zero
     total_pwm = 0
     run = 1 # only want to print set_time once
 
@@ -138,6 +138,7 @@ if __name__ == "__main__":  # test code contained below
                 run = 0
 
     avg_PWM = total_pwm/set_time
+    print(controller1.err)
     print('AVG PWM Value: ' + str(avg_PWM))
     print('Settling Time: ' + str(set_time))
    # controller1.reset_loop()
