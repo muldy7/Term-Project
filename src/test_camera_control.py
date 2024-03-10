@@ -32,7 +32,7 @@ motor1=MotorDriver('PC1','PA0','PA1',5)
 
 encoder1=EncoderReader('PC6','PC7',8)
 
-controller1=PD_Controller(0,1,0.015,encoder1)  # one rotation of the device is 4 rotations of the motor, 
+controller1=PD_Controller(0,.1,0,encoder1)  # one rotation of the device is 4 rotations of the motor, 
                                         # so 180 degrees is 2X whatever how many encoder tics two rotations are
 #controller2=Controller(6600,1,encoder1)
 
@@ -64,7 +64,7 @@ print(f"Current refresh rate: {camera._camera.refresh_rate}")
 camera._camera.refresh_rate = 10.0
 print(f"Refresh rate is now:  {camera._camera.refresh_rate}")
 
-utime.sleep(5)
+utime.sleep(3)
 
 while True:
     try:
@@ -79,10 +79,11 @@ while True:
         controller1.set_setpoint(camera.camera_error)
         
         print('taking an image')
-        print(camera.avg)
-        print(camera.max_index)
-        print(camera.max_value)
+        #print(camera.avg)
+        #print(camera.max_index)
+        #print(camera.max_value)
         print(camera.camera_error)
+        print(camera.i_bar)
         
         #utime.sleep()
         
@@ -91,14 +92,19 @@ while True:
         
         
         try:
-            for i in range(150):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
+            for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
+                utime.sleep_ms(10)
                 controller1.output_fun.read()    # run the controller
                 meas_output=controller1.output_fun.pos   # set the measured output
                 controller1.run(-1*meas_output)    # run the controller with the new measured output
                 PWM=controller1.PWM # set a new PWM from the conroller run function
                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
+                print(controller1.err)
+            
             controller1.reset_loop()
-        
+            motor1.set_duty_cycle(0)
+            
+            
             # controller1.step_response() # run out function that prints the values of the step response to the computer
         except KeyboardInterrupt:
              motor1.set_duty_cycle(0)

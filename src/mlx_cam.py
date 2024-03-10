@@ -115,7 +115,7 @@ class MLX_Cam:
 
 
     ## A "standard" set of characters of different densities to make ASCII art
-    asc = " -.:=+*#%@"
+    asc = " .@"
 
 
     ## @brief   Show a data array from the IR image as ASCII art.
@@ -267,18 +267,33 @@ class MLX_Cam:
                self.max_value = val	# store the biggest value
                print(self.max_index)
         
+        # do the centroid calculation
+        i_l = self.max_index-1	# index to the left of the device
+        i_r = self.max_index+1	# index to the right of the device
+        if self.max_index == 0:
+            i_l = 0
+        if self.max_index == 31:
+            i_r = 31
+            
+        self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
+        self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
+                                 
         # find degree location of the largest value
         #print(self._width)	# measurements for testing
         #print(self._height)
         
+        print('ibar: ' + str(self.i_bar))
+        # might want to make this changeable
         k_degree = 63 # this is the amount of encoder ticks per degree of MLX cam
-                       # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width
+                       # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
         
-        if self.max_index <= 16:
-            self.camera_error = (-15+self.max_index)*-k_degree	# spin to the left x degrees based on how far the max temp is
+        
+        if self.i_bar <= 15:
+            self.camera_error = (-15+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
         else:
-            self.camera_error = (16-self.max_index)*k_degree	# should be zero if i is 16, and 15 if i is 31
+            self.camera_error = (16-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
         
+    
         # test the biggest value in the list
         print(self.camera_error)
         
@@ -342,7 +357,7 @@ def test_MLX_cam():
             # could also be written to a file. Spreadsheets, Matlab(tm), or
             # CPython can read CSV and make a decent false-color heat plot.
             show_image = False
-            show_csv = True
+            show_csv = False
             if show_image:
                 camera.ascii_image(image)
             elif show_csv:
@@ -352,7 +367,7 @@ def test_MLX_cam():
                 camera.ascii_art(image)
             gc.collect()
             print(f"Memory: {gc.mem_free()} B free")
-            time.sleep_ms(3141) #3141
+            time.sleep_ms(5) #3141
 
         except KeyboardInterrupt:
             break
@@ -432,7 +447,12 @@ def camera_data():
     print ("Done.")        
 
 if __name__ == "__main__":
-
-    test_MLX_cam()
+    
+    
+    camera_data()
+    print(camera.avg)
+    print(i_bar)
+    utime.sleep(5)
+    #test_MLX_cam()
 
 
