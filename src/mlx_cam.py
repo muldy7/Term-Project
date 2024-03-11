@@ -224,7 +224,7 @@ class MLX_Cam:
             return image
        
     # abe is going to make this to try and get the total value from the camera, instead of going through the CSV
-    def get_hotspot(self, array, limits=None):
+    def get_hotspot(self, array, limits=None, centroid):
 
         if limits and len(limits) == 2:
             scale = (limits[1] - limits[0]) / (max(array) - min(array))
@@ -262,40 +262,47 @@ class MLX_Cam:
         self.max_index = 0
        
         for i,val in enumerate(self.avg):
-           if val > self.max_value:
+            if i <= 10 or i >= 20:	# ignore values too far to the left or right 
+                continue
+            if val > self.max_value:
                self.max_index = i	# store the index of the biggest value, this gives us degree location of our value?
                self.max_value = val	# store the biggest value
                print(self.max_index)
         
-        # do the centroid calculation
+        
+       
         i_l = self.max_index-1	# index to the left of the device
         i_r = self.max_index+1	# index to the right of the device
         if self.max_index == 0:
             i_l = 0
         if self.max_index == 31:
             i_r = 31
-            
-        self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
-        self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
-                                 
+        
+        # might want to make this changeable
+        k_degree = 63 # this is the amount of encoder ticks per degree of MLX cam
+                       # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
+                       
+        # do the centroid calculation if centroid = True
+        if centroid == True:	# calc centroid if centroid equals true
+            self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
+            self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
+            print('ibar: ' + str(self.i_bar))
+            if self.i_bar <= 15:
+                self.camera_error = (-15+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
+            else:
+                self.camera_error = (16-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
+        else:	# calc with just i_max if centroid = False
+            if self.max_index <= 15:
+                self.camera_error = (-15+self.max_index)*k_degree	# spin to the left x degrees based on how far the max temp is
+            else:
+                self.camera_error = (16-self.max_index)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
+        
         # find degree location of the largest value
         #print(self._width)	# measurements for testing
         #print(self._height)
         
-        print('ibar: ' + str(self.i_bar))
-        # might want to make this changeable
-        k_degree = 63 # this is the amount of encoder ticks per degree of MLX cam
-                       # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
-        
-        
-        if self.i_bar <= 15:
-            self.camera_error = (-15+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
-        else:
-            self.camera_error = (16-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
-        
-    
         # test the biggest value in the list
-        print(self.camera_error)
+        #print(self.camera_error)
         
        
        
