@@ -34,7 +34,8 @@ state=0
 
 while True:
         print('state: ' + str(state))
-        try:
+        try:    
+                # STATE 0: INIT
                 if state==s0_init:
                     #instantiate the hardware 
                     motor1=MotorDriver('PC1','PA0','PA1',5)
@@ -78,6 +79,7 @@ while True:
                     
                     state=s1_rotate
                 
+                # STATE 1: Rotate 180 Degrees
                 elif state==s1_rotate:
 
                     try:
@@ -110,7 +112,8 @@ while True:
                             print('TypeError')
                             motor1.set_duty_cycle(0)
                             break
-
+                
+                # STATE 2: Find the Target
                 elif state==s2_control:
                         # Keep trying to get an image; this could be done in a task, with
                         # the task yielding repeatedly until an image is available
@@ -123,9 +126,9 @@ while True:
                                 #break
                         # values for testing
                         adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
-                        centroid = True
+                        centroid = True # do the centroid calculation for our camera to find i_bar
                         
-                        camera.get_hotspot(image, limits=(0, 1000),centroid)	# should we do a smaller value for calculations? is bigger or smaller better
+                        camera.get_hotspot(image, centroid, limits=(0, 1000))	# should we do a smaller value for calculations? is bigger or smaller better
                         controller1.set_setpoint(camera.camera_error+adjust)	# adding a little error
                         
                         # set gain values, can be fiddled with
@@ -174,13 +177,15 @@ while True:
                                 motor1.set_duty_cycle(0)
                                 break
                         
-                        
+                # STATE 3: Shoot the Target       
                 elif state==s3_shoot:   
-                        #pull the trigger 
+                        # pull the trigger 
                         servo1.set_pos(160)
                         utime.sleep(3)
                         servo1.set_pos(105)
                         state=s4_stop
+                
+                # STATE 4: Stop the Robot
                 elif state==s4_stop:
                         motor1.set_duty_cycle(0)
                         #controller1.set_setpoint((6600+camera.camera_error)*-1)
@@ -220,4 +225,8 @@ while True:
         except KeyboardInterrupt:
                 motor1.set_duty_cycle(0)
                 break
+        
+
+# test code below
+
         

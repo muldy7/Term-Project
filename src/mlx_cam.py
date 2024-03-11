@@ -224,7 +224,7 @@ class MLX_Cam:
             return image
        
     # abe is going to make this to try and get the total value from the camera, instead of going through the CSV
-    def get_hotspot(self, array, limits=None, centroid):
+    def get_hotspot(self, array, centroid, limits=None):
 
         if limits and len(limits) == 2:
             scale = (limits[1] - limits[0]) / (max(array) - min(array))

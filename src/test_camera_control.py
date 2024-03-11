@@ -75,7 +75,7 @@ while True:
         while not image:
             image = camera.get_image_nonblocking()
             utime.sleep_ms(5) #50
-        camera.get_hotspot(image, limits=(0, 1000),True)
+        camera.get_hotspot(image, True, limits=(0, 1000))
         controller1.set_setpoint(camera.camera_error)
         
         print('taking an image')

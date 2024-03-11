@@ -114,12 +114,12 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
     color1 = random.choice(colors)  # create a random color choice
 
     # plot the step response
-    plot_axes.plot(time, pos, label = 'Measured Response Data, kp: '+ kp + ' kd: ' + kd + 'sp: ' + set_point, color = color1, marker = '.' )   
+    plot_axes.plot(time, pos, label = 'Measured Response Data, kp: '+ kp + ' kd: ' + kd + ' sp: ' + set_point, color = color1, marker = '.' )   
     plot_axes.set_xlabel(xlabel)
     plot_axes.set_ylabel(ylabel)
     plot_axes.grid(True)
     plot_axes.legend()
-    plot_axes.axis([0, 1500, -8000, 8000])
+    plot_axes.axis([0, 1000, -7000, 7000])
     plot_canvas.draw()
     
 
@@ -150,15 +150,17 @@ def tk_matplot(plot_function, xlabel, ylabel, title):
     toolbar.update()
 
     # Create the buttons that run tests, clear the screen, and exit the program
-    entry = tkinter.Entry(master=tk_root, textvariable='')	# this creates the entry box
+    entry = tkinter.Entry(master=tk_root, textvariable='')	# this creates the entry box for Kp
     
+    # entry for Kd
     entry2 = tkinter.Entry(master=tk_root, textvariable='')	# this creates the entry box
     
+    # entry for setpoint
     entry3 = tkinter.Entry(master=tk_root, textvariable='')
     
     # the eneter button takes the kp value and sends it to run
     button_enter = tkinter.Button(master=tk_root,
-                                  text="Enter Kp Value and Run", command=lambda: plot_function(axes, canvas,
+                                  text="Run Step Response", command=lambda: plot_function(axes, canvas,
                                                               xlabel, ylabel, entry, entry2,entry3))
    
     button_quit = tkinter.Button(master=tk_root,
@@ -171,13 +173,19 @@ def tk_matplot(plot_function, xlabel, ylabel, title):
     # Arrange things in a grid because "pack" is weird
     canvas.get_tk_widget().grid(row=0, column=0, columnspan=4)
     toolbar.grid(row=1, column=0, columnspan=4)
-    #button_run.grid(row=2, column=0)
-    button_clear.grid(row=2, column=2)
-    button_quit.grid(row=2, column=3)
-    entry.grid(row = 2, column = 0)
-    entry2.grid(row = 3, column = 0)
-    entry3.grid(row = 4, column = 0)
-    button_enter.grid(row=2, column = 1)
+    
+    # buttons
+    button_clear.grid(row=2, column=3)
+    button_quit.grid(row=4, column=3)
+    entry.grid(row = 2, column = 1)
+    entry2.grid(row = 3, column = 1)
+    entry3.grid(row = 4, column = 1)
+    button_enter.grid(row=2, column = 2)
+
+    # labels
+    tkinter.Label(master=tk_root, text="Enter Kp Value:").grid(row=2,column=0)
+    tkinter.Label(master=tk_root, text="Enter Kd Value:").grid(row=3,column=0)
+    tkinter.Label(master=tk_root, text="Enter Desired Setpoint:").grid(row=4,column=0)
 
     # This function runs the program until the user decides to quit
     tkinter.mainloop()
