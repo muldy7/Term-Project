@@ -193,9 +193,16 @@ while True:
                         print('setpoint (should be equal to cam_err): ' + str(controller1.setpoint))
                         print('final enc pos: ' + str(controller1.output_fun.pos))
                         
+                        
                         # calculate values
                         theta_act = controller1.output_fun.pos*(6600/180) # calculate the actual degrees turned
-                        theta_expected = i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
+                        theta_exp = i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
+                        ss_error = (camera.camera_error - controller1.output_fun.pos)
+                        
+                        print('theta actual: ' + str(theta_act))
+                        print('theta expected: ' + str(theta_exp))
+                        print('steady state error: ' + str(ss_error))
+                        
                         
                         # return the device to zero
 #                         for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
