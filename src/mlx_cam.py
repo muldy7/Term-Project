@@ -458,7 +458,7 @@ if __name__ == "__main__":
     
     camera_data()
     print(camera.avg)
-    print(i_bar)
+    print(camera.i_bar)
     utime.sleep(5)
     #test_MLX_cam()
 

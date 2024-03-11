@@ -98,7 +98,7 @@ while True:
             #print('targeting:' + str(i) + ',' + str(controller1.err) + ',' + str(PWM))
                     
             # code to exit the loop once error is small enough
-            if controller1.err <= 2 and controller1.err >= -2:
+            if controller1.err <= 2 and controller1.err >= -2: # i think we could put this at the top right so there's no loop? then can yield in a task?
                 motor1.set_duty_cycle(0)    # stop motor
                 #utime.sleep_ms(10)
                 if count == 0:  # first pass of 180 degrees
@@ -180,7 +180,7 @@ while True:
         
         # calculate values
         theta_act = controller1.output_fun.pos*(6600/180) # calculate the actual degrees turned
-        theta_exp = i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
+        theta_exp = camera.i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
         ss_error = (camera.camera_error - controller1.output_fun.pos)
         
         print('theta actual: ' + str(theta_act))
