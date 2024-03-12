@@ -179,8 +179,8 @@ while True:
         
         
         # calculate values
-        theta_act = controller1.output_fun.pos*(6600/180) # calculate the actual degrees turned
-        theta_exp = camera.i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
+        theta_act = (controller1.output_fun.pos-6560)*(180/6560) # calculate the actual degrees turned
+        theta_exp = -(15.5*(55/32)) + camera.i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
         ss_error = (camera.camera_error - controller1.output_fun.pos)
         
         print('theta actual: ' + str(theta_act))

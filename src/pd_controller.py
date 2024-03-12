@@ -100,10 +100,8 @@ class PD_Controller:
         self.prev_err = 0 # previous error value for delta_err calculation
 
         # could also have it call encoderX.zero() so it's done in one function?
-        self.output_fun.zero()  # we can try and see if works, forgot that this is happening in here
+        # self.output_fun.zero()  # we can try and see if works, forgot that this is happening in here
 
 
-    # add reset loop here
-        
     
     

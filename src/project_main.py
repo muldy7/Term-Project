@@ -42,7 +42,7 @@ while True:
 
                     encoder1=EncoderReader('PC6','PC7',8)   
 
-                    controller1=PD_Controller(6600,.1,0,encoder1)
+                    controller1=PD_Controller(6560,.1,0,encoder1)
 
                     servo1=ServoDriver('PA5',2,1)
                     servo1.set_pos(60)
@@ -97,6 +97,7 @@ while True:
                                     motor1.set_duty_cycle(0)
                                     utime.sleep_ms(10)
                                     controller1.reset_loop()
+                                    controller1.output_fun.zero()
                                     state=s2_control
                                     break
                   

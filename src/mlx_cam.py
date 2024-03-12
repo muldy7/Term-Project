@@ -270,7 +270,7 @@ class MLX_Cam:
                print(self.max_index)
         
         
-       
+           
         i_l = self.max_index-1	# index to the left of the device
         i_r = self.max_index+1	# index to the right of the device
         if self.max_index == 0:
@@ -279,7 +279,7 @@ class MLX_Cam:
             i_r = 31
         
         # might want to make this changeable
-        k_degree = 63 # this is the amount of encoder ticks per degree of MLX cam
+        k_degree = 62.64 # this is the amount of encoder ticks per degree of MLX cam
                        # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
                        
         # do the centroid calculation if centroid = True
@@ -287,16 +287,21 @@ class MLX_Cam:
             self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
             self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
             print('ibar: ' + str(self.i_bar))
-            if self.i_bar <= 15:
-                self.camera_error = (-15+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
-            else:
-                self.camera_error = (16-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
+            
+            # calculate camera_error
+            self.camera_error = (-15.5+self.i_bar)*k_degree
+#             if self.i_bar <= 15:
+#                 self.camera_error = (-15.5+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
+#             else:
+#                 self.camera_error = (15.5-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
         else:	# calc with just i_max if centroid = False
-            if self.max_index <= 15:
-                self.camera_error = (-15+self.max_index)*k_degree	# spin to the left x degrees based on how far the max temp is
-            else:
-                self.camera_error = (16-self.max_index)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
-        
+            self.camera_error = (-15.5+self.max_index)*k_degree
+
+#             if self.max_index <= 15:
+#                 self.camera_error = (-15.5+self.max_index)*k_degree	# spin to the left x degrees based on how far the max temp is
+#             else:
+#                 self.camera_error = (15.5-self.max_index)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
+#         
         # find degree location of the largest value
         #print(self._width)	# measurements for testing
         #print(self._height)
