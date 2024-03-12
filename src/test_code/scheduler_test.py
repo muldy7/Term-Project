@@ -52,7 +52,7 @@ def task1_fun(shares):
 
             encoder1=EncoderReader('PC6','PC7',8)   
 
-            controller1=PD_Controller(6600,.1,0,encoder1)   # set up initial control parameters for the 180 degree rotate
+            controller1=PD_Controller(6600,1.25,0.01575,encoder1)   # set up initial control parameters for the 180 degree rotate
 
             servo1=ServoDriver('PA5',2,1)
 
@@ -68,9 +68,11 @@ def task1_fun(shares):
             yield
         
         elif state==s1_control:
-            while controller1.err <= 2 and controller1.err >= -2: # code to exit the loop once error is small enough
+            print(controller1.err)
+            if controller1.err >= 5 or controller1.err <= -5: # code to exit the loop once error is small enough
                 #utime.sleep_ms(1)  # can set a different amount to change the amount of control
                 #utime.sleep_ms(10)
+                print('controlling')
                 controller1.output_fun.read()    # run the controller
                 meas_output=controller1.output_fun.pos   # set the measured output
                 controller1.run(-1*meas_output)    # run the controller with the new measured output
@@ -79,52 +81,58 @@ def task1_fun(shares):
                 #print(i,PWM)
                 #print('targeting:' + str(i) + ',' + str(controller1.err) + ',' + str(PWM))
                 yield
-
-            motor1.set_duty_cycle(0)    # stop motor
-            #utime.sleep_ms(10)
-            if count == 0:  # first pass of 180 degrees
-                state=s2_image
-                image_flag.put(1) # set the image flag
-                count += 1
-                total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
-                controller1.reset_loop()    # reset the loop and encoder
-                yield   # this should be fin as a yield
-            elif count == 1:    # second control pass for finding target (could technically change ifs)
-                count += 1
-                state=s2_image
-                image_flag.put(1)   # set the image flag
-                total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
-                controller1.reset_loop()   # reset the loop and encoder
-                yield
-            elif count==2:       # after third control loop for finding target
-                count += 1
-                total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
-                state=s3_shoot  
-                controller1.reset_loop()
-                yield
             else:
-                state=s5_stop   # final loop of returning to zero 
-                yield
+                print('done controlling')
+                motor1.set_duty_cycle(0)    # stop motor
+                #utime.sleep_ms(10)
+                if count == 0:  # first pass of 180 degrees
+                    state=s2_image
+                    image_flag.put(1) # set the image flag
+                    count += 1
+                    total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
+                    controller1.reset_loop()    # reset the loop and encoder
+                    yield   # this should be fin as a yield
+                elif count == 1:    # second control pass for finding target (could technically change ifs)
+                    count += 1
+                    state=s2_image
+                    image_flag.put(1)   # set the image flag
+                    total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
+                    controller1.reset_loop()   # reset the loop and encoder
+                    yield
+                elif count==2:       # after third control loop for finding target
+                    count += 1
+                    total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
+                    state=s3_shoot  
+                    controller1.reset_loop()
+                    yield
+                else:
+                    state=s5_stop   # final loop of returning to zero 
+                    yield
             
         # STATE 2: Find the Target
         elif state==s2_image:
                 
                 camera_error = camera_setpoint.get()
-                while camera_error <= 0:    # wait for a camera error value
+                #print(camera_error)
+                if camera_error <= 0 or camera_error >= 0:    # wait for a camera error value
+                    print('waiting for setpoint')
+                    #camera_error = camera_setpoint.get()
+                    print(camera_error)
                     yield
+                else:
                     
-                # values for testing
-                adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
-    
-                controller1.set_setpoint(camera_error+adjust)	# adding a little error
-                
-                # set gain values, can be fiddled with
-                controller1.set_Kp(1)	
-                controller1.set_Kd(.002)
+                    # values for testing
+                    adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
+        
+                    controller1.set_setpoint(camera_error+adjust)	# adding a little error
+                    
+                    # set gain values, can be fiddled with
+                    controller1.set_Kp(1)	
+                    controller1.set_Kd(.002)
 
-                state = s1_control
-                camera_error.put(0) # reset camera_error    # not sure if I do this here?
-                yield
+                    state = s1_control
+                    camera_error.put(0) # reset camera_error    # not sure if I do this here?
+                    yield
 
         # STATE 3: Shoot the Target       
         elif state==s3_shoot:   
@@ -246,6 +254,7 @@ def task2_fun(shares):
 
             else:
                 yield
+        yield
         
 
         
@@ -255,8 +264,8 @@ def task2_fun(shares):
 if __name__ == "__main__":
 
     # Create intertask variables for the loops
-    camera_setpoint = task_share.Share(0)    # share for the camera_error variable, the setpoint from the hotspot
-    image_flag = task_share.Share(0)      # flag for communicating if an image is required
+    camera_setpoint = task_share.Share('f',0)    # share for the camera_error variable, the setpoint from the hotspot, f for float
+    image_flag = task_share.Share('h',0)      # flag for communicating if an image is required
 
     # Create the tasks. If trace is enabled for any task, memory will be
     # allocated for state transition tracing, and the application will run out
