@@ -34,11 +34,12 @@ class PD_Controller:
         self.output_fun=read_fun
         self.pos_output=[]
         self.Kd = Kd
-        self.T = 0.001   # this is the trigger rate for the controller, rough estimate
+        self.T = 0.01   # this is the trigger rate for the controller, rough estimate
         self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
         #self.err = 0
         self.prev_err = 0 # previous error value for delta_err calculation
-        self.err = 51 # for initilization
+        self.err = 51 # for initilization, need an initial error for the control loop
+        self.store = True    # for storing values
         
     def run(self,meas_output):
         """!
@@ -50,8 +51,14 @@ class PD_Controller:
         self.err = self.setpoint - meas_output
         self.delta_err = self.err - self.prev_err
         self.PWM=self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
-        #self.pos_output.append(meas_output)
         self.prev_err = self.err
+
+        # store values for graphing
+        if self.store == True:
+            self.pos_output.append(meas_output)
+        if len(self.pos_output) >= 1000:    # need to stop storing values if there are too many
+            self.store = False   
+        
     
     def set_setpoint(self,setpoint):
         """!
@@ -80,7 +87,7 @@ class PD_Controller:
     def step_response(self):
         print('start')
         for i in range(len(self.pos_output)):
-            print(i*3.333,self.pos_output[i])			# does a clock tick every milisecond
+            print(i*3.333,self.pos_output[i])			# does a step about every 3 miliseconds
         print('end')
         
     def reset_loop(self):
@@ -93,7 +100,7 @@ class PD_Controller:
         self.prev_err = 0 # previous error value for delta_err calculation
 
         # could also have it call encoderX.zero() so it's done in one function?
-        self.output_fun.zero()  # we can try and see if works
+        self.output_fun.zero()  # we can try and see if works, forgot that this is happening in here
 
 
     # add reset loop here
