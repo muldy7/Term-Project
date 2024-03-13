@@ -57,7 +57,7 @@ def task1_fun(shares):
             servo1=ServoDriver('PA5',2,1)
 
             # start to servo to prevent from shooting
-            servo1.set_pos(60)  # may not need this?
+            #servo1.set_pos(60)  # may not need this?
 
             # interstate variables
             count = 0   # for counting in the control loop
@@ -141,8 +141,10 @@ def task1_fun(shares):
         elif state==s3_shoot:   
             # pull the trigger 
             servo1.set_pos(160)
-            utime.sleep(3)
-            servo1.set_pos(105)
+            time.sleep(1)
+            servo1.set_pos(195)
+            time.sleep(1)
+            servo1.set_pos(160)
 
             state=s4_return
             yield

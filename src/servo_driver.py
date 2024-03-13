@@ -18,13 +18,17 @@ class ServoDriver:
 
                  
     def set_pos(self,angle):
-        PWM_angle=(angle/180)*2000+500     #converts an angle in degrees to the pwm needed for the servo controller. 500 microseconds 
+        PWM_angle=(angle/270)*2000+500     #converts an angle in degrees to the pwm needed for the servo controller. 500 microseconds 
                                             # is 0 degrees, 2500 is 180 degrees
         PWM_angle = int(PWM_angle)
         self.timer_channel.pulse_width(PWM_angle)
 
 if __name__ == "__main__":  # test code contained below
     servo1 = ServoDriver('PA5',2,1)
-    servo1.set_pos(120)
-    time.sleep(3)
+    servo1.set_pos(160)
+    time.sleep(1)
+    servo1.set_pos(195)
+    time.sleep(1)
+    servo1.set_pos(160)
+    
     

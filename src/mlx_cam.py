@@ -245,10 +245,13 @@ class MLX_Cam:
         # sum the colums
         self.sums = []
         
-        for i in range(self._width):	 # go through each colum
+        for i in range(self._width):	 # go through each column
             total = 0
             for j in range(self._height): # go through each row
-                total += float(image_arr[j][i])
+                if j >= 14:
+                    continue
+                else:
+                    total += float(image_arr[j][i])
             self.sums.append(total)
         print(self.sums)
         
@@ -261,8 +264,8 @@ class MLX_Cam:
         self.max_value = 0
         self.max_index = 0
        
-        for i,val in enumerate(self.avg):
-            if i <= 10 or i >= 20:	# ignore values too far to the left or right 
+        for i,val in enumerate(self.sums):
+            if i <= 12 or i >= 18:	# ignore values too far to the left or right 
                 continue
             if val > self.max_value:
                self.max_index = i	# store the index of the biggest value, this gives us degree location of our value?
@@ -270,7 +273,7 @@ class MLX_Cam:
                print(self.max_index)
         
         
-           
+        # values for centroid calculation
         i_l = self.max_index-1	# index to the left of the device
         i_r = self.max_index+1	# index to the right of the device
         if self.max_index == 0:
@@ -278,7 +281,7 @@ class MLX_Cam:
         if self.max_index == 31:
             i_r = 31
         
-        # might want to make this changeable
+        # encoder tic/camera column constant
         k_degree = 62.64 # this is the amount of encoder ticks per degree of MLX cam
                        # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
                        
@@ -287,11 +290,13 @@ class MLX_Cam:
             self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
             self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
             print('ibar: ' + str(self.i_bar))
+            print('i_max: ' + str(self.max_index))
+            print(self.sums)
             
             # calculate camera_error
             self.camera_error = (-15.5+self.i_bar)*k_degree
 #             if self.i_bar <= 15:
-#                 self.camera_error = (-15.5+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
+#                 self.camera_error = (-15+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
 #             else:
 #                 self.camera_error = (15.5-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
         else:	# calc with just i_max if centroid = False
@@ -309,10 +314,7 @@ class MLX_Cam:
         # test the biggest value in the list
         #print(self.camera_error)
         
-       
-       
-        
-
+    
 ## This test function sets up the sensor, then grabs and shows an image in a
 #  terminal every few seconds. By default it shows ASCII art, but it can be
 #  set to show better looking grayscale images in some terminal programs such
@@ -347,7 +349,10 @@ def test_MLX_cam():
     print(f"Current refresh rate: {camera._camera.refresh_rate}")
     camera._camera.refresh_rate = 10.0
     print(f"Refresh rate is now:  {camera._camera.refresh_rate}")
-
+    
+    print(camera._height)
+    time.sleep(5)
+    
     while True:
         try:
             # Get and image and see how long it takes to grab that image
@@ -377,6 +382,7 @@ def test_MLX_cam():
                     print(line)
             else:
                 camera.ascii_art(image)
+                time.sleep(5)
             gc.collect()
             print(f"Memory: {gc.mem_free()} B free")
             time.sleep_ms(5) #3141
@@ -444,7 +450,7 @@ def camera_data():
             if show_image:
                 camera.ascii_image(image)
             elif show_csv:
-                camera.get_hotspot(image, limits=(0, 1000))
+                camera.get_hotspot(image, True, limits=(0, 1000))
                     
                         
             else:
@@ -461,10 +467,12 @@ def camera_data():
 if __name__ == "__main__":
     
     
-    camera_data()
-    print(camera.avg)
-    print(camera.i_bar)
-    utime.sleep(5)
-    #test_MLX_cam()
+#     camera_data()
+#     print(camera.avg)
+#     print(camera.i_bar)
+#     utime.sleep(5)
+    
+    test_MLX_cam()
+    print(camera._height)
 
 

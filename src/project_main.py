@@ -42,10 +42,10 @@ while True:
 
                     encoder1=EncoderReader('PC6','PC7',8)   
 
-                    controller1=PD_Controller(6560,.1,0,encoder1)
+                    controller1=PD_Controller(6560,.9,.02,encoder1)
 
                     servo1=ServoDriver('PA5',2,1)
-                    servo1.set_pos(60)
+                    #servo1.set_pos(60)
                     count = 0
                 
                     # camera set-up code
@@ -92,7 +92,7 @@ while True:
                                 controller1.run(-1*meas_output)    # run the controller with the new measured output
                                 PWM=controller1.PWM # set a new PWM from the conroller run function
                                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
-                                print(i,PWM)
+                                print(i,PWM,controller1.err)
                                 if controller1.err <= 10 and controller1.err >= -10:
                                     motor1.set_duty_cycle(0)
                                     utime.sleep_ms(10)
@@ -133,8 +133,8 @@ while True:
                         controller1.set_setpoint(camera.camera_error+adjust)	# adding a little error
                         
                         # set gain values, can be fiddled with
-                        controller1.set_Kp(1)	
-                        controller1.set_Kd(.002)
+                        controller1.set_Kp(1.1)	
+                        controller1.set_Kd(.0155)
                         controller1.output_fun.zero()
                         controller1.reset_loop()
                         
@@ -157,13 +157,14 @@ while True:
                                     utime.sleep_ms(40)
                                     
                                     # use count to do multiple aiming loops
-                                    if count == 1:
+                                    if count == 0:
                                         state=s3_shoot
                                         break
                                     else:
                                         count += 1
                                         state=s2_control
                                         controller1.reset_loop()
+                                        controller1.output_fun.zero()
                                         print('restarting')
                                         break
                                 
@@ -182,9 +183,11 @@ while True:
                 elif state==s3_shoot:   
                         # pull the trigger 
                         servo1.set_pos(160)
-                        utime.sleep(3)
-                        servo1.set_pos(105)
-                        state=s4_stop
+                        utime.sleep(1)
+                        servo1.set_pos(195)
+                        utime.sleep(1)
+                        servo1.set_pos(160)
+                        state = s4_stop
                 
                 # STATE 4: Stop the Robot
                 elif state==s4_stop:
@@ -192,6 +195,25 @@ while True:
                         #controller1.set_setpoint((6600+camera.camera_error)*-1)
                         
                         # print values for verification
+                     
+                        
+                        
+                        controller1.set_Kp(.1)
+                        controller1.set_Kd(0)
+                        controller1.set_setpoint(-1*(6560+(controller1.setpoint)))
+                        #return the device to zero
+                        for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
+                                #print(i)
+                                #utime.sleep_ms(1)
+                                utime.sleep_ms(10)
+                                controller1.output_fun.read()    # run the controller
+                                meas_output=controller1.output_fun.pos   # set the measured output
+                                controller1.run(-1*meas_output)    # run the controller with the new measured output
+                                PWM=controller1.PWM # set a new PWM from the conroller run function
+                                motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
+                        
+                        motor1.set_duty_cycle(0)
+                        
                         print(camera.avg)	# print the list of avg_sums
                         print('i_bar: ' + str(camera.i_bar))	# print i_bar
                         print('i_max: ' + str(camera.max_index))
@@ -209,18 +231,6 @@ while True:
                         print('theta expected: ' + str(theta_exp))
                         print('steady state error: ' + str(ss_error))
                         
-                        
-                        # return the device to zero
-#                         for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
-#                                 #print(i)
-#                                 #utime.sleep_ms(1)
-#                                 utime.sleep_ms(10)
-#                                 controller1.output_fun.read()    # run the controller
-#                                 meas_output=controller1.output_fun.pos   # set the measured output
-#                                 controller1.run(-1*meas_output)    # run the controller with the new measured output
-#                                 PWM=controller1.PWM # set a new PWM from the conroller run function
-#                                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
-#                         break
                         break
 
         except KeyboardInterrupt:
