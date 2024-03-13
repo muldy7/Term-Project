@@ -232,15 +232,34 @@ class MLX_Cam:
         else:
             offset = 0.0
             scale = 1.0
+        
+        # create a 2D array out of lists that is the size of the image_arr
         rows, cols = (self._height, self._width)    # for array creation
         image_arr = [[' ' for i in range(cols)] for j in range(rows)]	# create an image array
         
+        # add the pixel value from the image to the image 2D list to store values for calculations
         for row in range(self._height):
             for col in range(self._width):
                 pix = int((array[row * self._width + (self._width - col - 1)]
                           + offset) * scale)
                 
                 image_arr[row][col] = pix	# add each pixel to the array
+        
+        
+        # create an array to store values for an image with no target in it
+        # this array will serve as a baseline for our camera to make it more accurate
+        rows, cols = (self._height, self._width)    # for array creation
+        artifact_arr = [[float(0) for i in range(cols)] for j in range(rows)]	# create an array to remove artifacts from the camera
+        
+        # add values to each value of artifact arr
+        for col in artifact_arr:
+            for row in artifact_arr:
+                artifact_arr[col][row] = 0
+        
+        # subtract each value of artifact_arr from image_arr
+        for col in image_arr
+            for row in image_arr
+                image_arr[col][row] =  float(image_arr[col][row])-float(artifact_arr[col][row])
         
         # sum the colums
         self.sums = []	# create the list
