@@ -243,76 +243,76 @@ class MLX_Cam:
                 image_arr[row][col] = pix	# add each pixel to the array
         
         # sum the colums
-        self.sums = []
+        self.sums = []	# create the list
         
-        for i in range(self._width):	 # go through each column
-            total = 0
-            for j in range(self._height): # go through each row
-                if j >= 14:
+        # iterate through each row and then each column
+        for i in range(self._width):	 # go through each column, i
+            total = 0	# create a total for each column
+            for j in range(self._height): # go through each row, k
+                if j >= 14:	#ignore rows greater than 13 
                     continue
                 else:
-                    total += float(image_arr[j][i])
-            self.sums.append(total)
-        print(self.sums)
+                    total += float(image_arr[j][i])	# add the current value from image_arr to the total 
+            self.sums.append(total)	# add the value of each column to sums
+        
+        # print for testing
+        #print(self.sums)
         
         # average the sums
-        self.avg = []
-        for val in self.sums:
-            self.avg.append(val/self._height)
+        self.avg = []	# create the average list
+        for val in self.sums:	# iterate through each value of self.sums
+            self.avg.append(val/14)	# average the value
             
        # can use enumerate to iterate through the list and record the index and max value of the location it is at
-        self.max_value = 0
+        self.max_value = 0	# create max index and value
         self.max_index = 0
        
-        for i,val in enumerate(self.sums):
-            if i <= 12 or i >= 18:	# ignore values too far to the left or right 
+        # enumerate through self.avg to test for the larget value
+        for idx,val in enumerate(self.avg):
+            if idx <= 11 or idx >= 19:	# ignore values too far to the left or right 
                 continue
-            if val > self.max_value:
-               self.max_index = i	# store the index of the biggest value, this gives us degree location of our value?
+            if val > self.max_value:	# find the largest value in the list
+               self.max_index = idx	# store the index of the biggest value, this gives us degree location of our target
                self.max_value = val	# store the biggest value
-               print(self.max_index)
+               
+               # print for testing
+               #print(self.max_index)
         
         
         # values for centroid calculation
         i_l = self.max_index-1	# index to the left of the device
         i_r = self.max_index+1	# index to the right of the device
+        
+        # ignore indexes if too far to right or left
         if self.max_index == 0:
             i_l = 0
         if self.max_index == 31:
             i_r = 31
         
         # encoder tic/camera column constant
+        # this value is used for the encoder tics calculation
         k_degree = 62.64 # this is the amount of encoder ticks per degree of MLX cam
-                       # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
+                         # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
                        
         # do the centroid calculation if centroid = True
         if centroid == True:	# calc centroid if centroid equals true
+            # sum the indexes multiplied by their avg value
             self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
+            
+            # divide by the sums of their average values
             self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
+           
+            # print values for testing
             print('ibar: ' + str(self.i_bar))
             print('i_max: ' + str(self.max_index))
             print(self.sums)
             
             # calculate camera_error
+            # 15.5 is the middle of the camera, multiply by the K_degree constant
             self.camera_error = (-15.5+self.i_bar)*k_degree
-#             if self.i_bar <= 15:
-#                 self.camera_error = (-15+self.i_bar)*k_degree	# spin to the left x degrees based on how far the max temp is
-#             else:
-#                 self.camera_error = (15.5-self.i_bar)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
+            
         else:	# calc with just i_max if centroid = False
             self.camera_error = (-15.5+self.max_index)*k_degree
-
-#             if self.max_index <= 15:
-#                 self.camera_error = (-15.5+self.max_index)*k_degree	# spin to the left x degrees based on how far the max temp is
-#             else:
-#                 self.camera_error = (15.5-self.max_index)*-k_degree	# should be zero if i is 16, and 15 if i is 31. sign of k_degree is how much it turns
-#         
-        # find degree location of the largest value
-        #print(self._width)	# measurements for testing
-        #print(self._height)
-        
-        # test the biggest value in the list
-        #print(self.camera_error)
         
     
 ## This test function sets up the sensor, then grabs and shows an image in a

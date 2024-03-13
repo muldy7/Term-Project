@@ -45,8 +45,6 @@ while True:
                     controller1=PD_Controller(6560,.9,.02,encoder1)
 
                     servo1=ServoDriver('PA5',2,1)
-                    #servo1.set_pos(60)
-                    count = 0
                 
                     # camera set-up code
                     try:
@@ -84,65 +82,51 @@ while True:
 
                     try:
                         for i in range(150):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
-                                #print(i)
-                                #utime.sleep_ms(1)
-                                utime.sleep_ms(10)
-                                controller1.output_fun.read()    # run the controller
-                                meas_output=controller1.output_fun.pos   # set the measured output
-                                controller1.run(-1*meas_output)    # run the controller with the new measured output
-                                PWM=controller1.PWM # set a new PWM from the conroller run function
-                                motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
-                                print(i,PWM,controller1.err)
-                                if controller1.err <= 10 and controller1.err >= -10:
-                                    motor1.set_duty_cycle(0)
-                                    utime.sleep_ms(10)
-                                    controller1.reset_loop()
-                                    controller1.output_fun.zero()
-                                    state=s2_control
-                                    break
-                  
+                            utime.sleep_ms(10)
+                            controller1.output_fun.read()    # run the controller
+                            meas_output=controller1.output_fun.pos   # set the measured output
+                            controller1.run(-1*meas_output)    # run the controller with the new measured output
+                            PWM=controller1.PWM # set a new PWM from the conroller run function
+                            motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
+                            
+                            # print out for testing
+                            #print(i,PWM,controller1.err)
+                            
+                            # exit the loop once the error is small enough
+                            if controller1.err <= 10 and controller1.err >= -10:
+                                motor1.set_duty_cycle(0)
+                                utime.sleep_ms(10)	# wait 0.10 ms before moving to next state
+                                controller1.reset_loop()	# reset the controller
+                                controller1.output_fun.zero()	# zero the encoder
                                 
-                       # controller1.reset_loop()
-                       
-                        #state=s2_control
-                            # controller1.step_response() # run out function that prints the values of the step response to the computer
-                    except KeyboardInterrupt:
-                            motor1.set_duty_cycle(0)
-                            break
-                    except TypeError:
-                            print('TypeError')
-                            motor1.set_duty_cycle(0)
-                            break
+                                state=s2_control	# move to the next state
+                                break
+                            
                 
                 # STATE 2: Find the Target
                 elif state==s2_control:
-                        # Keep trying to get an image; this could be done in a task, with
-                        # the task yielding repeatedly until an image is available
-                        #utime.sleep(1)
+                        # Keep trying to get an image
                         image = None
                         while not image:
                                 image = camera.get_image_nonblocking()
                                 utime.sleep_ms(5) #50
-                                
-                                #break
-                        # values for testing
-                        adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
+                            
+                        # calculate the centroid if centroid = True
                         centroid = True # do the centroid calculation for our camera to find i_bar
                         
+                        # calculate the hotspot from the camera image
                         camera.get_hotspot(image, centroid, limits=(0, 1000))	# should we do a smaller value for calculations? is bigger or smaller better
-                        controller1.set_setpoint(camera.camera_error+adjust)	# adding a little error
+                        
+                        # set the controller setpoint to the calculated encoder tics
+                        controller1.set_setpoint(camera.camera_error)	# camera.error is the calculated tics from the get_hotspot function
                         
                         # set gain values, can be fiddled with
                         controller1.set_Kp(1.1)	
                         controller1.set_Kd(.0155)
-                        controller1.output_fun.zero()
-                        controller1.reset_loop()
-                        
+                    
                         # start the control loop
                         try:
                             for i in range(150):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
-                                #print(i)
-                                #utime.sleep_ms(1)
                                 utime.sleep_ms(1)
                                 controller1.output_fun.read()    # run the controller
                                 meas_output=controller1.output_fun.pos   # set the measured output
@@ -152,55 +136,33 @@ while True:
                                 print('targeting:' + str(i) + ',' + str(controller1.err) + ',' + str(PWM))
                                 
                                 # exit once the error is small enough, this could be refined as well
-                                if controller1.err <= 5 and controller1.err >= -5:
-                                    motor1.set_duty_cycle(0)
-                                    utime.sleep_ms(40)
+                                if controller1.err <= 10 and controller1.err >= -10:
+                                    motor1.set_duty_cycle(0)	# stop the motor
+                                    utime.sleep_ms(20)
                                     
-                                    # use count to do multiple aiming loops
-                                    if count == 0:
-                                        state=s3_shoot
-                                        break
-                                    else:
-                                        count += 1
-                                        state=s2_control
-                                        controller1.reset_loop()
-                                        controller1.output_fun.zero()
-                                        print('restarting')
-                                        break
-                                
-                            #state=s3_shoot
-                            
-                                # controller1.step_response() # run out function that prints the values of the step response to the computer
-                        except KeyboardInterrupt:
-                                motor1.set_duty_cycle(0)
-                                break
-                        except TypeError:
-                                print('TypeError')
-                                motor1.set_duty_cycle(0)
-                                break
+                                    # branch to state_3
+                                    state=s3_shoot
+                                    break
+                        
                         
                 # STATE 3: Shoot the Target       
                 elif state==s3_shoot:   
                         # pull the trigger 
-                        servo1.set_pos(160)
-                        utime.sleep(1)
-                        servo1.set_pos(195)
-                        utime.sleep(1)
-                        servo1.set_pos(160)
+                        servo1.set_pos(160)	# move the servo into position
+                        utime.sleep(1)	# wait
+                        servo1.set_pos(195)	# pull the trigger
+                        utime.sleep(1)	# wait
+                        servo1.set_pos(160)	# pull it back
                         state = s4_stop
                 
                 # STATE 4: Stop the Robot
                 elif state==s4_stop:
-                        motor1.set_duty_cycle(0)
-                        #controller1.set_setpoint((6600+camera.camera_error)*-1)
-                        
-                        # print values for verification
-                     
-                        
+                        motor1.set_duty_cycle(0)	# stop the motor
                         
                         controller1.set_Kp(.1)
                         controller1.set_Kd(0)
-                        controller1.set_setpoint(-1*(6560+(controller1.setpoint)))
+                        controller1.set_setpoint(-1*(6560+(controller1.setpoint)))	# set the setpoint to the total encoder tics moved
+                        
                         #return the device to zero
                         for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
                                 #print(i)
@@ -211,9 +173,13 @@ while True:
                                 controller1.run(-1*meas_output)    # run the controller with the new measured output
                                 PWM=controller1.PWM # set a new PWM from the conroller run function
                                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
+                                
+                                # exit once error is small enough
+                                if controller1.err <= 10 and controller1.err >= -10:
+                                    motor1.set_duty_cycle(0)
+                                    break
                         
-                        motor1.set_duty_cycle(0)
-                        
+                        # print values for verification and testing
                         print(camera.avg)	# print the list of avg_sums
                         print('i_bar: ' + str(camera.i_bar))	# print i_bar
                         print('i_max: ' + str(camera.max_index))
@@ -233,11 +199,5 @@ while True:
                         
                         break
 
-        except KeyboardInterrupt:
-                motor1.set_duty_cycle(0)
-                break
-        
-
-# test code below
 
         
