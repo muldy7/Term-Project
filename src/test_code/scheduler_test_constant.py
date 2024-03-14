@@ -31,7 +31,7 @@ def task1_fun(shares):
     @param shares A list holding the share and queue used by this task
     """
     # Get references to the share and queue which have been passed to this task
-    image_flag, camera_setpoint = shares    # not sure if I did this correctly
+    i_flg, cam_set = shares    # not sure if I did this correctly
     
     #setting up the FSM
     s0_init=0
@@ -44,7 +44,7 @@ def task1_fun(shares):
     state=0
 
     while True:
-        
+        print(state)
         # STATE 0: INIT
         if state==s0_init:
             #instantiate the hardware 
@@ -52,17 +52,23 @@ def task1_fun(shares):
 
             encoder1=EncoderReader('PC6','PC7',8)   
 
-            controller1=PD_Controller(6560,1.25,0.01575,encoder1)   # set up initial control parameters for the 180 degree rotate
+            controller1=PD_Controller(6560,.9,0.015,encoder1)   # set up initial control parameters for the 180 degree rotate
 
             servo1=ServoDriver('PA5',2,1)
-
-            # start to servo to prevent from shooting
-            servo1.set_pos(60)  # may not need this?
-
+            
             # interstate variables
             count = 0   # for counting in the control loop
 
             time_start = utime.time()
+            
+#             print(i_flg)
+#             utime.sleep(3)
+#             i_flg.put(1)
+#             print('image_flag' + str(i_flg.get()))
+#             utime.sleep(5)
+            
+            i_flg.put(1)
+            cam_set.put(0)
 
             # set the next state
             state=s1_control
@@ -70,19 +76,34 @@ def task1_fun(shares):
         
         elif state==s1_control:
             #print(controller1.err)
-
-            if image_flag.get() == 1 and count == 1:
-                camera_error = camera_setpoint.get()
-                controller1.set_setpoint(camera_error+controller1.setpoint)
+            
+            print('state 1')
+            #utime.sleep(5)
+            img_flg = i_flg.get()
+            print('image flag: ' + str(img_flg))
+            print('setpoint: ' + str(controller1.setpoint))
+            yield
+            if img_flg == 1 and count == 1:
+                camera_error = cam_set.get()
+                controller1.set_setpoint(camera_error)
+                controller1.output_fun.zero()
                 controller1.reset_loop()   # need to test if this is necessary or not
-                image_flag.put(0)
+                i_flg.put(0)	# intertask varible
+                img_flg = 0 # local variable
+                print('changing the setpoint!')
+                #utime.sleep(5)
+            #else:
+        
+                
             
             # controller calculations
             controller1.output_fun.read()    # run the controller
             meas_output=controller1.output_fun.pos   # set the measured output
+            print('measured output: ' + str(meas_output))
             controller1.run(-1*meas_output)    # run the controller with the new measured output
-            
-            if controller1.err >= 5 or controller1.err <= -5: # code to exit the loop once error is small enough
+            yield
+            if controller1.err >= 10 or controller1.err <= -10: # code to exit the loop once error is small enough
+                print('controller error: ' + str(controller1.err))
                 #utime.sleep_ms(1)  # can set a different amount to change the amount of control
                 #utime.sleep_ms(10)
                 print('controlling')
@@ -98,31 +119,48 @@ def task1_fun(shares):
 
                 # calculated elapsed time
                 # find the current time
+                motor1.set_duty_cycle(0)
                 curr_time = utime.time()
                 elap_time = curr_time - time_start # need to test this
                 if count == 0:  # first pass of 180 degree
-                    image_flag.put(0) # set the image flag to "need an image
+                    
+                    i_flg.put(0) # set the image flag to "need an image
                     controller1.reset_loop()    # reset the loop and encoder
 
                     # set gain values, can be fiddled with
                     controller1.set_Kp(1.1)	
-                    controller1.set_Kd(.0155)
+                   # controller1.set_Kd(.0145)
+                    controller1.set_Kd(0)
                     
                     # increment count
                     count += 1
 
                     # start the timer
                     time_start = utime.time()
+                    
+                    motor1.set_duty_cycle(0)
+                    
+                    #utime.sleep(5)
+                    
+                    print('finished moving around!')
+                    #utime.sleep(1)
 
                     yield   # this should be fin as a yield
                 elif elap_time >= 6 and count == 1:    # need to exit once its been six seconds?
+                    print('shooting!')
+                    #utime.sleep(5)
                     motor1.set_duty_cycle(0)
                     state=s3_shoot
                     count += 1 # increment count for the next time through
                     yield
-                else:
+                elif count == 2:
+                    print('stopping')
+                    motor1.set_duty_cycle(0)
                     state=s5_stop   # final loop of returning to zero 
                     yield
+                else:
+                    yield
+            yield
             
         # STATE 2: Find the Target
         # elif state==s2_image:
@@ -152,8 +190,12 @@ def task1_fun(shares):
         #             yield
 
         # STATE 3: Shoot the Target       
-        elif state==s3_shoot:   
-            # pull the trigger 
+        elif state==s3_shoot:
+            
+            # pull the trigger
+            # pulling the trigger
+            print('pulling the trigger!')
+            #utime.sleep(5)
             servo1.set_pos(160)	# move the servo into position
             utime.sleep(1)	# wait
             servo1.set_pos(195)	# pull the trigger
@@ -165,10 +207,14 @@ def task1_fun(shares):
         
         #STATE 4: Return to Zero
         elif state==s4_return:
-            controller1.set_setpoint(-1*controller1.setpoint) # set the setpoint to the opposite of total ticks
-            controller1.set_Kd(0)
-            controller1.set_Kp(.1)    # set to low Kp so it returns slowly
-            state=s1_control
+            motor1.set_duty_cycle(0)
+#             print(controller1.setpoint)
+#             controller1.set_setpoint(-1*6560) # set the setpoint to the opposite of total ticks
+#             controller1.set_Kd(0)
+#             controller1.set_Kp(.1)    # set to low Kp so it returns slowly
+#             
+#             print('returning to zero')
+            state=s5_stop
             yield
 
         # STATE 5: Stop the Robot
@@ -205,7 +251,7 @@ def task2_fun(shares):
     @param shares A tuple of a share and queue from which this task gets data
     """
     # Get references to the share and queue which have been passed to this task
-    image_flag, camera_setpoint = shares
+    i_flg_cam, cam_set_cam = shares
 
     state = 0
 
@@ -246,16 +292,20 @@ def task2_fun(shares):
         
         # STATE 1: Take a picture
         else:
-            image_flg = image_flag.get()
+            img_flg = i_flg_cam.get()
             
-            if image_flg == 0:   # wait for image flag to be true
+            if img_flg == 0:   # wait for image flag to be true
                 image = None # reset image
                 while not image:
                     image = camera.get_image_nonblocking()
+                    print('waiting for image')
                     #utime.sleep_ms(5) # maybe not in scheduler?
                     yield # can add state to yield? yielding doesn't break! I see 
                 
                 
+                # test prints
+                print('took a picture!')
+                #utime.sleep(5)
                     
                 # this code may have to go in another state we will see if it scips the yield once the image is created?
                 #adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
@@ -263,11 +313,13 @@ def task2_fun(shares):
 
                 # find the hotspot and put it in the share 
                 camera.get_hotspot(image, centroid, limits=(0, 1000))
-                camera_setpoint.put(camera.camera_error)
+                cam_set_cam.put(camera.camera_error)
 
                 # lower the flag
-                image_flag.put(1)	# reset the shared flag variable
-                image_flg = 1		# reset the local flag variable
+                i_flg_cam.put(1)	# reset the shared flag variable
+                img_flg = 1		# reset the local flag variable
+                
+                #image = None
 
                 
                 yield
@@ -285,16 +337,16 @@ def task2_fun(shares):
 if __name__ == "__main__":
 
     # Create intertask variables for the loops
-    camera_setpoint = task_share.Share('f',0)    # share for the camera_error variable, the setpoint from the hotspot, f for float
-    image_flag = task_share.Share('h',0)      # flag for communicating if an image is required
+    camera_setpoint = task_share.Share('f', thread_protect=False, name="Share 0")    # share for the camera_error variable, the setpoint from the hotspot, f for float
+    image_flag = task_share.Share('h', thread_protect=False, name="Share 0")      # flag for communicating if an image is required
 
     # Create the tasks. If trace is enabled for any task, memory will be
     # allocated for state transition tracing, and the application will run out
-    # of memory after a while and quit. Therefore, use tracing only for 
+    # of memory after a while and quit. Therefore, use tracing only for alw
     # debugging and set trace to False when it's not needed
-    task1 = cotask.Task(task1_fun, name="Motor and Servo Control", priority=1, period=10,
+    task1 = cotask.Task(task1_fun, name="Motor and Servo Control", priority=1, period=5,
                         profile=True, trace=False, shares=(image_flag, camera_setpoint))
-    task2 = cotask.Task(task2_fun, name="Thermal Camera Imager", priority=2, period=10,
+    task2 = cotask.Task(task2_fun, name="Thermal Camera Imager", priority=2, period=7,
                         profile=True, trace=False, shares=(image_flag, camera_setpoint))
     
     cotask.task_list.append(task1)

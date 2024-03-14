@@ -42,7 +42,7 @@ while True:
 
             encoder1=EncoderReader('PC6','PC7',8)   
 
-            controller1=PD_Controller(6560,.9,.02,encoder1)
+            controller1=PD_Controller(6560,.2,0.001,encoder1)
 
             servo1=ServoDriver('PA5',2,1)
         
@@ -90,16 +90,27 @@ while True:
                     motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
                     
                     # print out for testing
-                    #print(i,PWM,controller1.err)
+                    print(i,PWM,controller1.err)
                     
                     # exit the loop once the error is small enough
                     if controller1.err <= 10 and controller1.err >= -10:
+                        
                         motor1.set_duty_cycle(0)
                         utime.sleep_ms(10)	# wait 0.10 ms before moving to next state
                         controller1.reset_loop()	# reset the controller
                         controller1.output_fun.zero()	# zero the encoder
                         
                         state=s2_control	# move to the next state
+                        utime.sleep(3)
+                        break
+                    if i == 149:
+                        motor1.set_duty_cycle(0)
+                        utime.sleep_ms(10)	# wait 0.10 ms before moving to next state
+                        controller1.reset_loop()	# reset the controller
+                        controller1.output_fun.zero()	# zero the encoder
+                        
+                        state=s2_control	# move to the next state
+                        utime.sleep(3)
                         break
                     
         
@@ -121,8 +132,8 @@ while True:
                 controller1.set_setpoint(camera.camera_error)	# camera.error is the calculated tics from the get_hotspot function
                 
                 # set gain values, can be fiddled with
-                controller1.set_Kp(1.1)	
-                controller1.set_Kd(.0155)
+                controller1.set_Kp(1.15)	
+                controller1.set_Kd(.01575)
             
                 # start the control loop
             
@@ -136,6 +147,7 @@ while True:
                     print('targeting:' + str(i) + ',' + str(controller1.err) + ',' + str(PWM))
                     
                     # exit once the error is small enough, this could be refined as well
+                    print(controller1.err)
                     if controller1.err <= 10 and controller1.err >= -10:
                         motor1.set_duty_cycle(0)	# stop the motor
                         utime.sleep_ms(20)
@@ -165,14 +177,14 @@ while True:
                 
                 #return the device to zero
                 for i in range(300):    # each run should be 3000 miliseconds or 3 seconds, each run acts as a controller loop
-                        #print(i)
-                        #utime.sleep_ms(1)
-                        utime.sleep_ms(10)
-                        controller1.output_fun.read()    # run the controller
-                        meas_output=controller1.output_fun.pos   # set the measured output
-                        controller1.run(-1*meas_output)    # run the controller with the new measured output
-                        PWM=controller1.PWM # set a new PWM from the conroller run function
-                        motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
+#                         #print(i)
+#                         #utime.sleep_ms(1)
+#                         utime.sleep_ms(10)
+#                         controller1.output_fun.read()    # run the controller
+#                         meas_output=controller1.output_fun.pos   # set the measured output
+#                         controller1.run(-1*meas_output)    # run the controller with the new measured output
+#                         PWM=controller1.PWM # set a new PWM from the conroller run function
+#                         motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
                         
                         # exit once error is small enough
                         if controller1.err <= 10 and controller1.err >= -10:
@@ -180,7 +192,7 @@ while True:
                             break
                 
                 # print values for verification and testing
-                print(camera.avg)	# print the list of avg_sums
+                #print(camera.avg)	# print the list of avg_sums
                 print('i_bar: ' + str(camera.i_bar))	# print i_bar
                 print('i_max: ' + str(camera.max_index))
                 print('camera_error (tics): ' + str(camera.camera_error)) # this is an encoder tic value
@@ -189,6 +201,7 @@ while True:
                 
                 
                 # calculate values
+                print(camera.sums)
                 theta_act = controller1.output_fun.pos*(180/6600) # calculate the actual degrees turned
                 theta_exp = camera.i_bar*(55/32) # calculate the expected degrees to turn from the temp calc
                 ss_error = (camera.camera_error + controller1.output_fun.pos)

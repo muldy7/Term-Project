@@ -245,22 +245,6 @@ class MLX_Cam:
                 
                 image_arr[row][col] = pix	# add each pixel to the array
         
-        
-        # create an array to store values for an image with no target in it
-        # this array will serve as a baseline for our camera to make it more accurate
-        rows, cols = (self._height, self._width)    # for array creation
-        artifact_arr = [[float(0) for i in range(cols)] for j in range(rows)]	# create an array to remove artifacts from the camera
-        
-        # add values to each value of artifact arr
-        for col in artifact_arr:
-            for row in artifact_arr:
-                artifact_arr[col][row] = 0
-        
-        # subtract each value of artifact_arr from image_arr
-        for col in image_arr
-            for row in image_arr
-                image_arr[col][row] =  float(image_arr[col][row])-float(artifact_arr[col][row])
-        
         # sum the colums
         self.sums = []	# create the list
         
@@ -268,27 +252,21 @@ class MLX_Cam:
         for i in range(self._width):	 # go through each column, i
             total = 0	# create a total for each column
             for j in range(self._height): # go through each row, k
-                if j >= 14:	#ignore rows greater than 13 
+                if j >= 17:	# set a vertical limit to ignore the bottom rows, can limit a top portion of the rows as well if thats helpful 
+                    continue
+                elif float(image_arr[j][i]) <= 200: # eliminate noise from the camera image, all values less than 200
                     continue
                 else:
                     total += float(image_arr[j][i])	# add the current value from image_arr to the total 
             self.sums.append(total)	# add the value of each column to sums
-        
-        # print for testing
-        #print(self.sums)
-        
-        # average the sums
-        self.avg = []	# create the average list
-        for val in self.sums:	# iterate through each value of self.sums
-            self.avg.append(val/14)	# average the value
             
        # can use enumerate to iterate through the list and record the index and max value of the location it is at
         self.max_value = 0	# create max index and value
         self.max_index = 0
        
-        # enumerate through self.avg to test for the larget value
-        for idx,val in enumerate(self.avg):
-            if idx <= 11 or idx >= 19:	# ignore values too far to the left or right 
+        # enumerate through self.sums to test for the larget value
+        for idx,val in enumerate(self.sums):
+            if idx <= 7 or idx >= 24:	# ignore values too far to the left or right 	# horizontal limit
                 continue
             if val > self.max_value:	# find the largest value in the list
                self.max_index = idx	# store the index of the biggest value, this gives us degree location of our target
@@ -307,6 +285,12 @@ class MLX_Cam:
             i_l = 0
         if self.max_index == 31:
             i_r = 31
+
+        # test to see which adjacent index value is bigger for centroid calculation
+        if self.sums[i_l] >= self.sums[i_r]:
+            i_calc = i_l # store the idex value for calculation
+        else:
+            i_calc = i_r
         
         # encoder tic/camera column constant
         # this value is used for the encoder tics calculation
@@ -316,10 +300,10 @@ class MLX_Cam:
         # do the centroid calculation if centroid = True
         if centroid == True:	# calc centroid if centroid equals true
             # sum the indexes multiplied by their avg value
-            self.i_bar = (self.max_index*(self.max_value) + (i_l)*(self.avg[i_l]) + (i_r)*self.avg[i_r])
+            self.i_bar = ((self.max_index*(self.max_value)) + ((i_calc)*(self.sums[i_calc])))
             
             # divide by the sums of their average values
-            self.i_bar = self.i_bar/(self.max_value + self.avg[i_l] + self.avg[i_r])
+            self.i_bar = self.i_bar/(self.max_value + self.sums[i_calc])
            
             # print values for testing
             print('ibar: ' + str(self.i_bar))
@@ -486,12 +470,12 @@ def camera_data():
 if __name__ == "__main__":
     
     
-#     camera_data()
-#     print(camera.avg)
-#     print(camera.i_bar)
-#     utime.sleep(5)
+    camera_data()
+    print(camera.avg)
+    print(camera.i_bar)
+    utime.sleep(5)
     
-    test_MLX_cam()
-    print(camera._height)
+#     test_MLX_cam()
+#     print(camera._height)
 
 

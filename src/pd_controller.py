@@ -14,7 +14,7 @@ along with setting the setpoint and Kp value of the control loop.
 @date 3/8/2024  
 '''
 # changing the date would allow us to do a good job taking note of changes
-
+import utime
 
 class PD_Controller:
     
@@ -34,10 +34,15 @@ class PD_Controller:
         self.output_fun=read_fun
         self.pos_output=[]
         self.Kd = Kd
-        self.T = 0.01   # this is the trigger rate for the controller, rough estimate
+
+        # values for Kd control
+        # timer values used for calculating rate of change of error
+        self.prev_time = 0  # previous time looping
+        self.curr_time = 0  # current time looping
+        self.T = 0   # this is the trigger rate for the controller
         self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
-        #self.err = 0
         self.prev_err = 0 # previous error value for delta_err calculation
+
         self.err = 51 # for initilization, need an initial error for the control loop
         self.store = True    # for storing values
         
@@ -48,10 +53,22 @@ class PD_Controller:
         @param meas_output This value is the previous measured output.
         """
         # create the equation that runs the control loop
+        # calculate error
         self.err = self.setpoint - meas_output
+
+        # calculate delta error for Kd
         self.delta_err = self.err - self.prev_err
-        self.PWM=self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
+
+        # calculate the change in time, for Kd
+        self.curr_time = utime.time()
+        self.T = self.curr_time - self.prev_time
+
+        # calculate PWM
+        self.PWM = self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
+        
+        # store values for Kd calculation
         self.prev_err = self.err
+        self.prev_time = utime.time()
 
         # store values for graphing
         if self.store == True:
