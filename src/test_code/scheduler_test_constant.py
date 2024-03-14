@@ -61,14 +61,21 @@ def task1_fun(shares):
 
             # interstate variables
             count = 0   # for counting in the control loop
-            total_ticks = 0
-            
+
+            time_start = utime.time()
+
             # set the next state
             state=s1_control
             yield
         
         elif state==s1_control:
-            print(controller1.err)
+            #print(controller1.err)
+
+            if image_flag.get() == 1 and count == 1:
+                camera_error = camera_setpoint.get()
+                controller1.set_setpoint(camera_error+controller1.setpoint)
+                controller1.reset_loop()   # need to test if this is necessary or not
+                image_flag.put(0)
             
             # controller calculations
             controller1.output_fun.read()    # run the controller
@@ -85,64 +92,73 @@ def task1_fun(shares):
                 #print('targeting:' + str(i) + ',' + str(controller1.err) + ',' + str(PWM))
                 yield
             else:
-                print('done controlling')
-                motor1.set_duty_cycle(0)    # stop motor
+                #print('done controlling')
+                #motor1.set_duty_cycle(0)    # stop motor
                 #utime.sleep_ms(10)
-                if count == 0:  # first pass of 180 degrees
-                    state=s2_image
-                    image_flag.put(1) # set the image flag
-                    count += 1
-                    total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
+
+                # calculated elapsed time
+                # find the current time
+                curr_time = utime.time()
+                elap_time = curr_time - time_start # need to test this
+                if count == 0:  # first pass of 180 degree
+                    image_flag.put(0) # set the image flag to "need an image
                     controller1.reset_loop()    # reset the loop and encoder
+
+                    # set gain values, can be fiddled with
+                    controller1.set_Kp(1.1)	
+                    controller1.set_Kd(.0155)
+                    
+                    # increment count
+                    count += 1
+
+                    # start the timer
+                    time_start = utime.time()
+
                     yield   # this should be fin as a yield
-                elif count == 1:    # second control pass for finding target (could technically change ifs)
-                    count += 1
-                    state=s2_image
-                    image_flag.put(1)   # set the image flag
-                    total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
-                    controller1.reset_loop()   # reset the loop and encoder
-                    yield
-                elif count==2:       # after third control loop for finding target
-                    count += 1
-                    total_ticks += controller1.output_fun.pos   # add encoder ticks of first rotation
-                    state=s3_shoot  
-                    controller1.reset_loop()
+                elif elap_time >= 6 and count == 1:    # need to exit once its been six seconds?
+                    motor1.set_duty_cycle(0)
+                    state=s3_shoot
+                    count += 1 # increment count for the next time through
                     yield
                 else:
                     state=s5_stop   # final loop of returning to zero 
                     yield
             
         # STATE 2: Find the Target
-        elif state==s2_image:
+        # elif state==s2_image:
                 
-                camera_error = camera_setpoint.get()
-                #print(camera_error)
-                if camera_error <= 0 or camera_error >= 0:    # wait for a camera error value
-                    print('waiting for setpoint')
-                    #camera_error = camera_setpoint.get()
-                    print(camera_error)
-                    yield
-                else:
-                    # values for testing
-                    adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
+        #         if image_flag.get() == 1:
+        #             camera_error = camera_setpoint.get()
+        #             controller1.set_setpoint(camera_error+controller1.setpoint)
+        #         #print(camera_error)
+        #         if camera_error <= 0 or camera_error >= 0:    # wait for a camera error value
+        #             print('waiting for setpoint')
+        #             #camera_error = camera_setpoint.get()
+        #             print(camera_error)
+        #             yield
+        #         else:
+        #             # values for testing
+        #             adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
         
-                    controller1.set_setpoint(camera_error+adjust+controller1.setpoint)	# add camera error to previous setpoint
+        #             controller1.set_setpoint(camera_error+adjust+controller1.setpoint)	# add camera error to previous setpoint
                     
-                    # set gain values, can be fiddled with
-                    #controller1.set_Kp(1)	
-                    #controller1.set_Kd(.002)
+        #             # set gain values, can be fiddled with
+        #             #controller1.set_Kp(1)	
+        #             #controller1.set_Kd(.002)
 
-                    state = s1_control
-                    camera_error.put(0) # reset camera_error    # not sure if I do this here?
-                    camera_error = 0	# reset local variable
-                    yield
+        #             state = s1_control
+        #             camera_error.put(0) # reset camera_error    # not sure if I do this here?
+        #             camera_error = 0	# reset local variable
+        #             yield
 
         # STATE 3: Shoot the Target       
         elif state==s3_shoot:   
             # pull the trigger 
-            servo1.set_pos(160)
-            utime.sleep(3)
-            servo1.set_pos(105)
+            servo1.set_pos(160)	# move the servo into position
+            utime.sleep(1)	# wait
+            servo1.set_pos(195)	# pull the trigger
+            utime.sleep(1)	# wait
+            servo1.set_pos(160)	# pull it back
 
             state=s4_return
             yield
@@ -151,7 +167,7 @@ def task1_fun(shares):
         elif state==s4_return:
             controller1.set_setpoint(-1*controller1.setpoint) # set the setpoint to the opposite of total ticks
             controller1.set_Kd(0)
-            controller1.set_Kp(.01)    # set to low Kp so it returns slowly
+            controller1.set_Kp(.1)    # set to low Kp so it returns slowly
             state=s1_control
             yield
 
@@ -232,14 +248,14 @@ def task2_fun(shares):
         else:
             image_flg = image_flag.get()
             
-            if image_flg == 1:   # wait for image flag to be true
+            if image_flg == 0:   # wait for image flag to be true
                 image = None # reset image
                 while not image:
                     image = camera.get_image_nonblocking()
                     #utime.sleep_ms(5) # maybe not in scheduler?
                     yield # can add state to yield? yielding doesn't break! I see 
                 
-                    
+                
                     
                 # this code may have to go in another state we will see if it scips the yield once the image is created?
                 #adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
@@ -250,8 +266,8 @@ def task2_fun(shares):
                 camera_setpoint.put(camera.camera_error)
 
                 # lower the flag
-                image_flag.put(0)	# reset the shared flag variable
-                image_flg = 0		# reset the local flag variable
+                image_flag.put(1)	# reset the shared flag variable
+                image_flg = 1		# reset the local flag variable
 
                 
                 yield
