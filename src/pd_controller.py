@@ -37,8 +37,9 @@ class PD_Controller:
 
         # values for Kd control
         # timer values used for calculating rate of change of error
-        self.prev_time = 0  # previous time looping
-        self.curr_time = 0  # current time looping
+        #self.prev_time = 0  # previous time looping
+        #self.curr_time = 0  # current time looping
+        
         self.T = 0   # this is the trigger rate for the controller
         self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
         self.prev_err = 0 # previous error value for delta_err calculation
@@ -60,15 +61,16 @@ class PD_Controller:
         self.delta_err = self.err - self.prev_err
 
         # calculate the change in time, for Kd
-        self.curr_time = utime.time()
-        self.T = self.curr_time - self.prev_time
+        #self.curr_time = utime.time()
+        #self.T = self.curr_time - self.prev_time
+        self.T = 0.01 # rough estimate
 
         # calculate PWM
         self.PWM = self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
         
         # store values for Kd calculation
         self.prev_err = self.err
-        self.prev_time = utime.time()
+        #self.prev_time = utime.time()
 
         # store values for graphing
         if self.store == True:
@@ -113,11 +115,14 @@ class PD_Controller:
         This function can be used in conjuction with encoderX.read() & set_setpoint() for a new control loop of a different angle
 
         """
+        # reset variables for the Kd calculation
         self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
         self.prev_err = 0 # previous error value for delta_err calculation
 
-        # could also have it call encoderX.zero() so it's done in one function?
-        # self.output_fun.zero()  # we can try and see if works, forgot that this is happening in here
+        # reset the timer
+        #self.prev_time = 0  # previous time looping
+        #self.curr_time = 0  # current time looping
+       
 
 
     

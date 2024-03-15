@@ -254,7 +254,7 @@ class MLX_Cam:
             for j in range(self._height): # go through each row, k
                 if j >= 17:	# set a vertical limit to ignore the bottom rows, can limit a top portion of the rows as well if thats helpful 
                     continue
-                elif float(image_arr[j][i]) <= 200: # eliminate noise from the camera image, all values less than 200
+                elif float(image_arr[j][i]) <= 250: # eliminate noise from the camera image, all values less than 200
                     continue
                 else:
                     total += float(image_arr[j][i])	# add the current value from image_arr to the total 
@@ -266,7 +266,7 @@ class MLX_Cam:
        
         # enumerate through self.sums to test for the larget value
         for idx,val in enumerate(self.sums):
-            if idx <= 7 or idx >= 24:	# ignore values too far to the left or right 	# horizontal limit
+            if idx <= 10 or idx >= 20:	# ignore values too far to the left or right 	# horizontal limit
                 continue
             if val > self.max_value:	# find the largest value in the list
                self.max_index = idx	# store the index of the biggest value, this gives us degree location of our target
@@ -287,10 +287,10 @@ class MLX_Cam:
             i_r = 31
 
         # test to see which adjacent index value is bigger for centroid calculation
-        if self.sums[i_l] >= self.sums[i_r]:
-            i_calc = i_l # store the idex value for calculation
-        else:
-            i_calc = i_r
+#         if self.sums[i_l] >= self.sums[i_r]:
+#             i_calc = i_l # store the idex value for calculation
+#         else:
+#             i_calc = i_r
         
         # encoder tic/camera column constant
         # this value is used for the encoder tics calculation
@@ -299,11 +299,13 @@ class MLX_Cam:
                        
         # do the centroid calculation if centroid = True
         if centroid == True:	# calc centroid if centroid equals true
+            
+                
             # sum the indexes multiplied by their avg value
-            self.i_bar = ((self.max_index*(self.max_value)) + ((i_calc)*(self.sums[i_calc])))
+            self.i_bar = ((self.max_index*(self.max_value)) + ((i_l)*(self.sums[i_l]))) + (i_r)*(self.sums[i_r]) + (i_r + 1)*(self.sums[i_r + 1]) + (i_l - 1)*(self.sums[i_l - 1])
             
             # divide by the sums of their average values
-            self.i_bar = self.i_bar/(self.max_value + self.sums[i_calc])
+            self.i_bar = self.i_bar/(self.max_value + self.sums[i_r] + self.sums[i_l] + self.sums[i_r + 1] + self.sums[i_l - 1])
            
             # print values for testing
             print('ibar: ' + str(self.i_bar))

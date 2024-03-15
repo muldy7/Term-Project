@@ -42,7 +42,7 @@ while True:
 
             encoder1=EncoderReader('PC6','PC7',8)   
 
-            controller1=PD_Controller(6560,.2,0.001,encoder1)
+            controller1=PD_Controller(6560,.4,0.0185,encoder1)
 
             servo1=ServoDriver('PA5',2,1)
         
@@ -101,7 +101,7 @@ while True:
                         controller1.output_fun.zero()	# zero the encoder
                         
                         state=s2_control	# move to the next state
-                        utime.sleep(3)
+                        utime.sleep(1)
                         break
                     if i == 149:
                         motor1.set_duty_cycle(0)
@@ -110,7 +110,7 @@ while True:
                         controller1.output_fun.zero()	# zero the encoder
                         
                         state=s2_control	# move to the next state
-                        utime.sleep(3)
+                        utime.sleep(1)
                         break
                     
         
@@ -132,8 +132,8 @@ while True:
                 controller1.set_setpoint(camera.camera_error)	# camera.error is the calculated tics from the get_hotspot function
                 
                 # set gain values, can be fiddled with
-                controller1.set_Kp(1.15)	
-                controller1.set_Kd(.01575)
+                controller1.set_Kp(1.1)	
+                controller1.set_Kd(.0158)
             
                 # start the control loop
             

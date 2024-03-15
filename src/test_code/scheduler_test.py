@@ -52,7 +52,7 @@ def task1_fun(shares):
 
             encoder1=EncoderReader('PC6','PC7',8)   
 
-            controller1=PD_Controller(6560,1.25,0.01575,encoder1)   # set up initial control parameters for the 180 degree rotate
+            controller1=PD_Controller(6560,.9,.02,encoder1)   # set up initial control parameters for the 180 degree rotate
 
             servo1=ServoDriver('PA5',2,1)
 
@@ -68,6 +68,8 @@ def task1_fun(shares):
             yield
         
         elif state==s1_control:
+
+            
             print(controller1.err)
             
             # controller calculations
