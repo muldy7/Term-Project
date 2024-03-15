@@ -71,7 +71,7 @@ while True:
                 # Create the camera object and set it up in default mode
             camera = MLX_Cam(i2c_bus)
             print(f"Current refresh rate: {camera._camera.refresh_rate}")
-            camera._camera.refresh_rate = 10.0
+            camera._camera.refresh_rate = 10.0	# could increase this for faster photos
             print(f"Refresh rate is now:  {camera._camera.refresh_rate}")
             
             
@@ -101,7 +101,7 @@ while True:
                         controller1.output_fun.zero()	# zero the encoder
                         
                         state=s2_control	# move to the next state
-                        utime.sleep(1)
+                        utime.sleep(1.5)
                         break
                     if i == 149:
                         motor1.set_duty_cycle(0)
@@ -110,7 +110,7 @@ while True:
                         controller1.output_fun.zero()	# zero the encoder
                         
                         state=s2_control	# move to the next state
-                        utime.sleep(1)
+                        utime.sleep(1.5)
                         break
                     
         
