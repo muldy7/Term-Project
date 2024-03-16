@@ -4,6 +4,8 @@
     We used some code from "basic_tasks.py" but modified it to fit our needs.
     This is the file that is stored on the Nucleo microcontroller.
 
+    upload working code!
+
 @author JR Ridgely, Abe Muldrow, Lucas Rambo, Peter Tomson
 @date   2021-Dec-15 JRR Created from the remains of previous example
 @date February 29, 2024 
@@ -120,25 +122,44 @@ def task1_fun(shares):
             controller1.set_Kp(1.15)	
             controller1.set_Kd(.01575)
 
-            # before controller the motor, test if there is a new image
-            img_flg = i_flg.get()   # get the current image_flag value
-
             # test prints
             print('image flag: ' + str(img_flg))
             print('setpoint: ' + str(controller1.setpoint))
+
+            # if image in the loop isnt working we can try this
+            # this works just like how it works in the other task so kinda removes point of using a scheduler
+            # could be tested to get timing right
+           # img_flg = i_flg.get()
+           # while img_flg == 0:
+           #     img_flg = i_flg.get()
+           #     camera_error = cam_set.get()
+           #     controller1.set_setpoint(camera_error)
+           #     controller1.output_fun.zero()
+           #     controller1.reset_loop()   # need to test if this is necessary or not
+           #     print('waiting for image in the control loop')
+           #     
+           #     yield 
             
-            if img_flg == 1:
-                camera_error = cam_set.get()
-                controller1.set_setpoint(camera_error)
-                controller1.output_fun.zero()
-                controller1.reset_loop()   # need to test if this is necessary or not
-                print('changing the setpoint!')
-                print(camera_error)
-                print(encoder1.pos)
-                print(controller1.setpoint)
-                #utime.sleep(3)
-            
-            for i in range(150):    
+            # the control loop for the camera controller, just need to make sure it can get back here while the camera is working
+            for i in range(150):
+                # before controller the motor, test if there is a new image
+                # delete this and try above if it doesn't work
+                img_flg = i_flg.get()   # get the current image_flag value
+                if img_flg == 1:
+                    camera_error = cam_set.get()
+                    controller1.set_setpoint(camera_error)
+                    controller1.output_fun.zero()
+                    controller1.reset_loop()   # need to test if this is necessary or not
+                    print('changing the setpoint!')
+                    print(camera_error)
+                    print(encoder1.pos)
+                    print(controller1.setpoint) 
+
+                    # can try zeroing the flags here for a new image  
+                    #i_flg.put(0)    # tell the camera we are ready for an image
+                    #img_flg = 0
+
+                # the control loop
                 controller1.output_fun.read()    # run the controller
                 meas_output=controller1.output_fun.pos   # set the measured output
                 controller1.run(-1*meas_output)    # run the controller with the new measured output
@@ -147,72 +168,32 @@ def task1_fun(shares):
                     
                 # print out for testing
                 print(i,PWM,controller1.err)
-                yield
+
+                # calculate the elapsed time, want to exit the loop after 5 seconds
+                curr_time = utime.time()
+                elap_time = curr_time - time_start
+
                 # exit the loop once the error is small enough
-                if controller1.err <= 10 and controller1.err >= -10:
+                if (controller1.err <= 10 and controller1.err >= -10) or i == 149:
                         
                     motor1.set_duty_cycle(0)
                     #utime.sleep_ms(10)	# wait 0.10 ms before moving to next state
                     controller1.reset_loop()	# reset the controller
                     controller1.output_fun.zero()	# zero the encoder
                     controller1.set_setpoint(0) # reset set point
-                    i_flg.put(0)    # tell the camera we are ready for an image
-                    
-                    # move to the next state
-                    state=s2_control	
-                    #utime.sleep(3)
-                    break
-                elif i == 149:  # if error never gets small enough leave the loop
-                    motor1.set_duty_cycle(0)
-                    #utime.sleep_ms(10)	# wait 0.10 ms before moving to next state
-                    controller1.reset_loop()	# reset the controller
-                    controller1.set_setpoint(0)
-                    controller1.output_fun.zero()	# zero the encoder
-                    i_flg.put(0)    # tell the camera we are ready for an image
 
-                    # move to the next state
-                    state=s2_control	
-                    #utime.sleep(3)
-                    break
-                else:          
+                    # tell the camera we are ready for an image
+                    i_flg.put(0)       # reset the flags
+                    img_flg = 0        
+
+                    # only exit once the error is small enough even if its been longer than 5 seconds
                     if elap_time >= 6:
                         print('shooting!')
                         
-                        state=s3_shoot  
-                        break
-                    break 
+                        state=s3_shoot
+                    #utime.sleep(3)
+                    break
             yield
-            
-            yield                
-#                 
-#             # loop to find the target
-#             for i in range(150):
-#                 meas_output=controller1.output_fun.pos   # set the measured output
-#                 controller1.run(-1*meas_output)    # run the controller with the new measured output
-#                 PWM=controller1.PWM # set a new PWM from the conroller run function
-#                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
-#                 print('targeting:' + str(i) + ',' + str(controller1.err) + ',' + str(PWM))
-#                 
-#                 #motor1.set_duty_cycle(0)
-#                 #utime.sleep(3)
-#                 # exit once the error is small enough, this could be refined as well
-#                 print(controller1.err)
-#                 print(i)
-#                 yield
-#                 if (controller1.err <= 10 and controller1.err >= -10) or i == 149:  # or jump if it goes through the entire loop
-#                     motor1.set_duty_cycle(0)	# stop the motor
-#                     controller1.reset_loop()    # reset the controller loop
-# 
-#                     # reset the image flag and get ready for new image
-#                     i_flg.put(0)	           # intertask varible
-#                     img_flg = 0                # local variable
-#                     
-#                     # test if it has been five seconds
-#                     curr_time = utime.time()
-#                     elap_time = curr_time - time_start
-        
-            
-        
 
 
         # STATE 3: Shoot the Target       
@@ -229,6 +210,7 @@ def task1_fun(shares):
             # set the state to the return to zero_state
             state=s4_return
             yield
+
         
         #STATE 4: Return to Zero
         elif state==s4_return:
@@ -277,7 +259,7 @@ def task1_fun(shares):
             break
         
             
-
+# TASK 2: CAMERA TASK
 def task2_fun(shares):
     """!
     Task for testing the use of tasks during set up of our code
@@ -316,7 +298,7 @@ def task2_fun(shares):
                 # Create the camera object and set it up in default mode
             camera = MLX_Cam(i2c_bus)
             print(f"Current refresh rate: {camera._camera.refresh_rate}")
-            camera._camera.refresh_rate = 10.0
+            camera._camera.refresh_rate = 10.0  # can try faster refresh rates
             print(f"Refresh rate is now:  {camera._camera.refresh_rate}")
             
             # set the next state
@@ -371,8 +353,8 @@ def task2_fun(shares):
 if __name__ == "__main__":
 
     # Create intertask variables for the loops
-    camera_setpoint = task_share.Share('f', thread_protect=False, name="Share 0")    # share for the camera_error variable, the setpoint from the hotspot, f for float
-    image_flag = task_share.Share('h', thread_protect=False, name="Share 0")      # flag for communicating if an image is required
+    camera_setpoint = task_share.Share('f', thread_protect=False, name="Camera Setpoint Share")    # share for the camera_error variable, the setpoint from the hotspot, f for float
+    image_flag = task_share.Share('h', thread_protect=False, name="Image Flag Share")      # flag for communicating if an image is required
 
     # Create the tasks. If trace is enabled for any task, memory will be
     # allocated for state transition tracing, and the application will run out
@@ -384,7 +366,7 @@ if __name__ == "__main__":
                         profile=True, trace=False, shares=(image_flag, camera_setpoint))
     
     # task2 is the imager for the camera
-    task2 = cotask.Task(task2_fun, name="Thermal Camera Imager", priority=2, period=10, # should experiment with the period
+    task2 = cotask.Task(task2_fun, name="Thermal Camera Imager", priority=2, period=100, # should experiment with the period
                         profile=True, trace=False, shares=(image_flag, camera_setpoint))
     
     cotask.task_list.append(task1)
