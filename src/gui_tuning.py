@@ -119,7 +119,7 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
     plot_axes.set_ylabel(ylabel)
     plot_axes.grid(True)
     plot_axes.legend()
-    plot_axes.axis([0, 300, -600, 600])
+    plot_axes.axis([0, 300, 0, 7000])	# change the axis based on how many encoder tics we are graphing
     plot_canvas.draw()
     
 

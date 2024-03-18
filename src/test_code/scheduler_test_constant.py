@@ -123,37 +123,37 @@ def task1_fun(shares):
             controller1.set_Kd(.01575)
 
             # test prints
-            print('image flag: ' + str(img_flg))
-            print('setpoint: ' + str(controller1.setpoint))
+            #print('image flag: ' + str(img_flg))
+            #print('setpoint: ' + str(controller1.setpoint))
 
             # if image in the loop isnt working we can try this
             # this works just like how it works in the other task so kinda removes point of using a scheduler
             # could be tested to get timing right
-           # img_flg = i_flg.get()
-           # while img_flg == 0:
-           #     img_flg = i_flg.get()
-           #     camera_error = cam_set.get()
-           #     controller1.set_setpoint(camera_error)
-           #     controller1.output_fun.zero()
-           #     controller1.reset_loop()   # need to test if this is necessary or not
-           #     print('waiting for image in the control loop')
-           #     
-           #     yield 
+            img_flg = i_flg.get()
+            while img_flg == 0:
+                img_flg = i_flg.get()
+                camera_error = cam_set.get()
+                controller1.set_setpoint(camera_error)
+                controller1.output_fun.zero()
+                controller1.reset_loop()   # need to test if this is necessary or not
+                print('waiting for image in the control loop')
+                
+                yield 
             
             # the control loop for the camera controller, just need to make sure it can get back here while the camera is working
             for i in range(150):
                 # before controller the motor, test if there is a new image
                 # delete this and try above if it doesn't work
-                img_flg = i_flg.get()   # get the current image_flag value
-                if img_flg == 1:
-                    camera_error = cam_set.get()
-                    controller1.set_setpoint(camera_error)
-                    controller1.output_fun.zero()
-                    controller1.reset_loop()   # need to test if this is necessary or not
-                    print('changing the setpoint!')
-                    print(camera_error)
-                    print(encoder1.pos)
-                    print(controller1.setpoint) 
+#                 img_flg = i_flg.get()   # get the current image_flag value
+#                 if img_flg == 1:
+#                     camera_error = cam_set.get()
+#                     controller1.set_setpoint(camera_error)
+#                     controller1.output_fun.zero()
+#                     controller1.reset_loop()   # need to test if this is necessary or not
+#                     print('changing the setpoint!')
+#                     print(camera_error)
+#                     print(encoder1.pos)
+#                     print(controller1.setpoint) 
 
                     # can try zeroing the flags here for a new image  
                     # if its working while it waits till error is small
@@ -218,7 +218,7 @@ def task1_fun(shares):
             motor1.set_duty_cycle(0)    # stop the robot from moving
 
             # set the setpoint to negative 180 degrees
-            neg_setpoint = 6560
+            neg_setpoint = -1*6560
             controller1.set_setpoint(neg_setpoint)
 
             # set the new gains
