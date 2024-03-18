@@ -138,6 +138,9 @@ def task1_fun(shares):
                 controller1.reset_loop()   # need to test if this is necessary or not
                 print('waiting for image in the control loop')
                 
+#                 i_flg.put(0)    # tell the camera we are ready for an image
+#                 img_flg = 0
+                
                 yield 
             
             # the control loop for the camera controller, just need to make sure it can get back here while the camera is working
@@ -188,7 +191,7 @@ def task1_fun(shares):
                     img_flg = 0        
 
                     # only exit once the error is small enough even if its been longer than 5 seconds
-                    if elap_time >= 6:
+                    if elap_time >= 5:
                         print('shooting!')
                         
                         state=s3_shoot
