@@ -1,12 +1,16 @@
 """!
-@file nucleo_main.py
+@file project_main.py
 
-This file contains code that was stored on our group's Nucleo board to generate the motor step-response. 
-This file was called by the code on our computer and read through the serial port to generate graphs of our step-response.
-The file below imports the three different classes we had previoulsy set up to run the motor. 
-The code below sets ups the motor, encoder, and controller classes necassary with their various pins. 
-After initilization, the code then starts a loop where it asks for a Kp value and then runs the given Kp value in a motor step-response. 
-Our motor_driver and encoder_reader classes were importanted to the board as well. Copies of these files can be found in the source code. 
+-The Holy Turrent of Antioch-
+
+This is the file we used during the Department of Foamland Securitiy Automated Sentry Trials.
+It contains code to rotate the turret 180 degrees, locate a target using a calculated heat signature, and fire at them.
+This was the main file used that contains calls to other python classes that are used for this project.
+Those files will contain a more in-depth description of each of their actions.
+This code was set up to run as a Finite State Machine, once through.
+Afterwards, the used would need to re-run the code in order to shoot again.
+See the Scheduler code for a working cooperative program.
+We found that while it worked, there wasn't too much of a difference compared to this file.
 
 @author Abe Muldrow
 @author Lucas Rambo
@@ -22,8 +26,7 @@ from mlx_cam import MLX_Cam
 import gc
 from machine import Pin, I2C
 
-
-#setting up the FSM
+#FSM States
 s0_init=0
 s1_rotate=1
 s2_control=2
@@ -68,7 +71,7 @@ while True:
             scanhex = [f"0x{addr:X}" for addr in i2c_bus.scan()]
             print(f"I2C Scan: {scanhex}")
 
-                # Create the camera object and set it up in default mode
+            # Create the camera object and set it up in default mode
             camera = MLX_Cam(i2c_bus)
             print(f"Current refresh rate: {camera._camera.refresh_rate}")
             camera._camera.refresh_rate = 10.0	# could increase this for faster photos
@@ -113,7 +116,6 @@ while True:
                         utime.sleep(1.5)
                         break
                     
-        
         # STATE 2: Find the Target
         elif state==s2_control:
                 # Keep trying to get an image
@@ -155,8 +157,7 @@ while True:
                         # branch to state_3
                         state=s3_shoot
                         break
-            
-                
+                    
         # STATE 3: Shoot the Target       
         elif state==s3_shoot:   
                 # pull the trigger 
