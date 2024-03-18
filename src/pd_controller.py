@@ -8,13 +8,14 @@ This controller class when used in conjuction with our motor_driver and encoder_
 closed loop porportional control of our motor. The class below includes function to init and run out controller, 
 along with setting the setpoint and Kp value of the control loop. 
 
+# would be worth it to explain the pi controller too, or maybe be cool and put them in one document?
+# idk might be better to have a controller, pd_controller, and a PID_controller class
+
 @author Abe Muldrow
 @author Lucas Rambo
 @author Peter Tomson
 @date 3/8/2024  
 '''
-# changing the date would allow us to do a good job taking note of changes
-import utime
 
 class PD_Controller:
     

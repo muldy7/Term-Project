@@ -156,6 +156,7 @@ def task1_fun(shares):
                     print(controller1.setpoint) 
 
                     # can try zeroing the flags here for a new image  
+                    # if its working while it waits till error is small
                     #i_flg.put(0)    # tell the camera we are ready for an image
                     #img_flg = 0
 
