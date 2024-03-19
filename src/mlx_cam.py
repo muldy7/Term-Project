@@ -253,9 +253,9 @@ class MLX_Cam:
             total = 0	# create a total for each column
             for j in range(self._height): # go through each row, k
                 if j >= 17:	# set a vertical limit to ignore the bottom rows, can limit a top portion of the rows as well if thats helpful 
-                    continue
-                elif float(image_arr[j][i]) <= 250: # eliminate noise from the camera image, all values less than 200
-                    continue
+                    total += 1
+                elif float(image_arr[j][i]) <= 500: # eliminate noise from the camera image, all values less than 200
+                    total += 1
                 else:
                     total += float(image_arr[j][i])	# add the current value from image_arr to the total 
             self.sums.append(total)	# add the value of each column to sums

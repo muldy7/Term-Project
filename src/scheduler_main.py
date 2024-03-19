@@ -1,13 +1,10 @@
 """!
 @file main.py
-    This file contains our main code to test two different motors cooperatively.
-    We used some code from "basic_tasks.py" but modified it to fit our needs.
-    This is the file that is stored on the Nucleo microcontroller.
-
-    upload working code!
+    This file contains our main code to set-up the scheduler to run our robot.
+    Although we were able use this file to run our code cooperatively, we found that the non scheduled code worked better for the competition. 
+    This scheduled code breaks the function into two tasks, the Thermal Camera Task and The Robot Controller Task. 
 
 @author JR Ridgely, Abe Muldrow, Lucas Rambo, Peter Tomson
-@date   2021-Dec-15 JRR Created from the remains of previous example
 @date February 29, 2024 
 @copyright (c) 2015-2021 by JR Ridgely and released under the GNU
     Public License, Version 2. 
@@ -29,7 +26,7 @@ from machine import Pin, I2C
 
 def task1_fun(shares):
     """!
-    Task that controls the motion of the first motor.
+    Task that controls the motion of the robot using the motor controlling the pan axis and the servo to pull the trigger. 
     @param shares A list holding the share and queue used by this task
     """
     # Get references to the share and queue which have been passed to this task
@@ -70,6 +67,7 @@ def task1_fun(shares):
             state=s1_spin
             yield
         
+
         # STATE 1: SPIN 180 DEGREES
         elif state == s1_spin:
             # loop to control the motor to spin 180 degrees
@@ -122,55 +120,25 @@ def task1_fun(shares):
             controller1.set_Kp(1.15)	
             controller1.set_Kd(.01575)
 
-            # test prints
-            #print('image flag: ' + str(img_flg))
-            #print('setpoint: ' + str(controller1.setpoint))
-
-            # if image in the loop isnt working we can try this
-            # this works just like how it works in the other task so kinda removes point of using a scheduler
-            # could be tested to get timing right
-#             img_flg = i_flg.get()
-#             while img_flg == 0: # dont really need to test img_flg
-#                 img_flg = i_flg.get()
-#                 camera_error = cam_set.get()
-#                 controller1.set_setpoint(camera_error)
-#                 controller1.output_fun.zero()
-#                 controller1.reset_loop()   # need to test if this is necessary or not
-#                 print('waiting for image in the control loop')
-                
-# #                 i_flg.put(0)    # tell the camera we are ready for an image
-# #                 img_flg = 0
-#                 # should go over the code with the boys so they can have input and help out, dont want to just solo carry
-                
-#                 yield 
-            
-            # the control loop for the camera controller, just need to make sure it can get back here while the camera is working
-            for i in range(150):
-                # image testing
-                camera_error = cam_set.get()
-                # there's an issue the first time through the code
-                if camera_error == 0:   # just break out of the loop until we have a camera error value
-                    break
-                
+            # before controller the motor, test if there is a new image
+            img_flg = i_flg.get()
+            while img_flg == 0:
                 img_flg = i_flg.get()
-                # test if camera error has changed since last cycle
-                # if img_flg == 0:
-                if camera_error == controller1.setpoint:    # this could also just be img_flg I guess that does the same thing 
-                    continue
-                else:
-                    # set the new camera values
-                    controller1.set_setpoint(camera_error)
-                    controller1.output_fun.zero()   # zero the encoder to have a new zero, maybe we dont want to zero? and instead add it, hmm
-                    controller1.reset_loop()   # need to test if this is necessary or not
-                    # could try to zero the motor or throw in some sleep or a lot of differnt stuff
-                    # motor1.set_duty_cycle(0)
-
-
+                camera_error = cam_set.get()
+                controller1.set_setpoint(camera_error)
+                controller1.output_fun.zero()
+                controller1.reset_loop()   # need to test if this is necessary or not
+                print('waiting for image in the control loop')
+                
+                yield 
+            
+            # the control loop for the camera controller
+            for i in range(150):
                 # the control loop
                 controller1.output_fun.read()    # run the controller
                 meas_output=controller1.output_fun.pos   # set the measured output
                 controller1.run(-1*meas_output)    # run the controller with the new measured output
-                PWM=controller1.PWM # set a new PWM from the conroller run function
+                PWM=controller1.PWM     # set a new PWM from the conroller run function
                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
                     
                 # print out for testing
@@ -190,15 +158,14 @@ def task1_fun(shares):
                     controller1.set_setpoint(0) # reset set point
 
                     # tell the camera we are ready for an image
-                    i_flg.put(0)       # reset the flags    # this could also be done above where we compare camera_error values 
-                    # img_flg = 0  dont really need local variable      
+                    i_flg.put(0)       # reset the flags
+                    img_flg = 0        
 
                     # only exit once the error is small enough even if its been longer than 5 seconds
                     if elap_time >= 5:
                         print('shooting!')
                         
                         state=s3_shoot
-                    #utime.sleep(3)
                     break
             yield
 
@@ -236,7 +203,7 @@ def task1_fun(shares):
                 controller1.output_fun.read()    # run the controller
                 meas_output=controller1.output_fun.pos   # set the measured output
                 controller1.run(-1*meas_output)    # run the controller with the new measured output
-                PWM=controller1.PWM # set a new PWM from the conroller run function
+                PWM=controller1.PWM     # set a new PWM from the conroller run function
                 motor1.set_duty_cycle(PWM)  # set the PWM of the motor to the new PWM value
                     
                 # print out for testing
@@ -269,7 +236,7 @@ def task1_fun(shares):
 # TASK 2: CAMERA TASK
 def task2_fun(shares):
     """!
-    Task for testing the use of tasks during set up of our code
+    Task for taking a picture 
     @param shares A tuple of a share and queue from which this task gets data
     """
     # Get references to the share and queue which have been passed to this task
@@ -322,46 +289,43 @@ def task2_fun(shares):
                 while not image:
                     image = camera.get_image_nonblocking()
                     print('waiting for image')
-                    #utime.sleep_ms(5) # maybe not in scheduler?
-                    yield # can add state to yield? yielding doesn't break! I see 
+
+                    yield 
                 
                 
                 # test prints
                 print('took a picture!')
-                #utime.sleep(5)
                     
-                # this code may have to go in another state we will see if it scips the yield once the image is created?
-                #adjust = -15 # how much adjustment to the setpoint, could be done after get_hotspot to use the max value
-                centroid = True # do the centroid calculation for our camera to find i_bar
+                centroid = True # if True do the centroid calculation for our camera to find i_bar
 
                 # find the hotspot and put it in the share 
-                camera.get_hotspot(image, centroid, limits=(0, 1000))
-                cam_set_cam.put(camera.camera_error)
+                camera.get_hotspot(image, centroid, limits=(0, 1000))   # use the hotspot calculation to find the target
+                cam_set_cam.put(camera.camera_error)    # put the calculated encoder tics in the share
 
                 # lower the flag
                 i_flg_cam.put(1)	# reset the shared flag variable
                 img_flg = 1		# reset the local flag variable
                 
-                #image = None
-
-                
                 yield
 
             else:
-                # yield and wait for the motor task
+                # yield and wait for the motor task if img_flg == 1
                 yield
        
         
 
-        
 # This code creates a share, a queue, and two tasks, then starts the tasks. The
 # tasks run until somebody presses ENTER, at which time the scheduler stops and
 # printouts show diagnostic information about the tasks, share, and queue.
 if __name__ == "__main__":
 
     # Create intertask variables for the loops
-    camera_setpoint = task_share.Share('f', thread_protect=False, name="Camera Setpoint Share")    # share for the camera_error variable, the setpoint from the hotspot, f for float
-    image_flag = task_share.Share('h', thread_protect=False, name="Image Flag Share")      # flag for communicating if an image is required
+    # share for the camera_error variable, the setpoint from the hotspot
+    camera_setpoint = task_share.Share('f', thread_protect=False, name="Camera Setpoint Share")   # f for float 
+
+    # flag for communicating if an image is required
+    # img_flg == 1 means there has been a new image for the controller task
+    image_flag = task_share.Share('h', thread_protect=False, name="Image Flag Share")      
 
     # Create the tasks. If trace is enabled for any task, memory will be
     # allocated for state transition tracing, and the application will run out
@@ -379,7 +343,6 @@ if __name__ == "__main__":
     cotask.task_list.append(task1)
     cotask.task_list.append(task2)
     
-
     # Run the memory garbage collector to ensure memory is as defragmented as
     # possible before the real-time scheduler is started
     gc.collect()
