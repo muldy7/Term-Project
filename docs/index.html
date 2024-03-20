@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.3.4</span>
+   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.4.0</span>
    </div>
    <div id="projectbrief">The following documented code implements a thermal imaging Nerf turret that is able to spin around, find, and shoot thermal targets for the ME-405 Term Project.</div>
   </td>
@@ -108,10 +108,8 @@ Main Project Code Files</h2>
 <h2><a class="anchor" id="classes"></a>
 Project Classes</h2>
 <p>The following classes are the ones written to for use in the creation and implementation of our robot.</p>
-<p><a class="el" href="pd__controller_8py.html" title="This file implements pd control of our device with some small changes to the previous controller clas...">pd_controller.py</a>: This file creates a class that implements a PD controller that we used to control our robot. The PD control was used in all elements of our motor movement in our main code to spin the robot and find targets. There are also a <a class="el" href="controller_8py.html" title="This file contains code to create a controller class that allows us to create a control loop to run o...">controller.py</a> and <br  />
- <a class="el" href="pid__controller_8py.html" title="This file attempts to implement pid control of our device with some small changes to the previous con...">pid_controller.py</a> file that work in a similar way but were not used on our final robot.</p>
-<p><a class="el" href="encoder__reader_8py.html" title="This file contains code which creates an encoder class for completion of ME-405 Week 2.">encoder_reader.py</a>: This file creates an encoder class that allows use to use the encoder on the <br  />
- motor we used. The encoder class allows use to measure the movement of the motor for calculation of our motor's movement that can be used along with the previous pd_controller to control the robot.</p>
+<p><a class="el" href="pd__controller_8py.html" title="This file implements pd control of our device with some small changes to the previous controller clas...">pd_controller.py</a>: This file creates a class that implements a PD controller that we used to control our robot. The PD control was used in all elements of our motor movement in our main code to spin the robot and find targets. There are also a <a class="el" href="controller_8py.html" title="This file contains code to create a controller class that allows us to create a control loop to run o...">controller.py</a> and <a class="el" href="pid__controller_8py.html" title="This file attempts to implement pid control of our device with some small changes to the previous con...">pid_controller.py</a> file that work in a similar way but were not used on our final robot.</p>
+<p><a class="el" href="encoder__reader_8py.html" title="This file contains code which creates an encoder class for completion of ME-405 Week 2.">encoder_reader.py</a>: This file creates an encoder class that allows use to use the encoder on the motor we used. The encoder class allows use to measure the movement of the motor for calculation of our motor's movement that can be used along with the previous pd_controller to control the robot.</p>
 <p><a class="el" href="mlx__cam_8py.html" title="This file was adjusted by our group to include a new function, get_hotspot to use the raw data to fin...">mlx_cam.py</a>: This file was given to us, and creates a class that allows use to use a thermal camera that can find targets for our robot to shoot at. Our group added another function, get_hotspot, takes images from the camera and calculates the location of the target in encoder tics. This encoder tic value was then given to our motor controller so the robot could point and shoot at targets in the <a class="el" href="project__main_8py.html" title="-The Holy Turrent of Antioch-">project_main.py</a> code.</p>
 <p><a class="el" href="motor__driver_8py.html" title="This file contains code that creates a class to control a motor for ME-405 Lab01.">motor_driver.py</a>: This file creates a motor_driver class to control the motor powering our robot. A motor object created with this class can be given a PWM value and will spin the motor at that <br  />
  PWM. This file was used in conjuction with the encoder and controller to move the robot.</p>
@@ -134,8 +132,7 @@ Task 1: Robot Controller</h2>
 <p>State 1 Spin 180:</p>
 <p>This state always occurs after INIT. This states uses the controller to turn the robot 180 degrees to face the target. This is done with the pd_controller, encoder, and motor_driver. Once the controller error is small enough the robot stops and moves to the next state.</p>
 <p>State 2 Control:</p>
-<p>This state takes the setpoint values from the get_hotspot function calculated by the Thermal Camera <br  />
- Task and moves the robot to the desired location. This is done by setting a shared inter-task variable img_flg to zero. This tells the Camera tasks it is ready for a new image. Once the hotspot has been calculated, the value is given to the controller and robot moves to that location. This means that in the five seconds after the turret spins around, it waits for an image, moves to the target location, asks for a new image, waits for the image, and then moves to the new location until five seconds has passed. After it has found the final target location and fives seconds has passed it stops moving and transitions to the next state. With the scheduler, the robot can move multiple times, depending on how much the target has moved, before FREEZE is called.</p>
+<p>This state takes the setpoint values from the get_hotspot function calculated by the Thermal Camera Task and moves the robot to the desired location. This is done by setting a shared inter-task variable img_flg to zero. This tells the Camera tasks it is ready for a new image. Once the hotspot has been calculated, the value is given to the controller and robot moves to that location. This means that in the five seconds after the turret spins around, it waits for an image, moves to the target location, asks for a new image, waits for the image, and then moves to the new location until five seconds has passed. After it has found the final target location and fives seconds has passed it stops moving and transitions to the next state. With the scheduler, the robot can move multiple times, depending on how much the target has moved, before FREEZE is called.</p>
 <p>State 3 Shoot:</p>
 <p>This state simply uses the servo to pull the trigger and shoot the target. This is done by setting the servo to a position that will pull the trigger and then returning the servo to its default position. After the trigger has been pulled the code transitions to the next state.</p>
 <p>State 4 Return:</p>
@@ -147,8 +144,7 @@ Task 2: Camera</h2>
 <p>State 0 INIT:</p>
 <p>This state initializes the camera with code from mlx_cam. This uses the I2C functionality and ports to control the thermal camera.</p>
 <p>State 1 Take a Picture:</p>
-<p>This photo waits for the inter-task variable image_flag to equal zero. Once the flag is lowered the state takes a picture, uses the get_hotspot command to find the location of the target in encoder tics, and then puts that value in the share. The image_flag is then raised to tell the other task there has been a new setpoint value calculated. The state then waits for the image_flag to be <br  />
- lowered again before taking a new image. This is done before the other task exits. </p>
+<p>This photo waits for the inter-task variable image_flag to equal zero. Once the flag is lowered the state takes a picture, uses the get_hotspot command to find the location of the target in encoder tics, and then puts that value in the share. The image_flag is then raised to tell the other task there has been a new setpoint value calculated. The state then waits for the image_flag to be lowered again before taking a new image. This is done before the other task exits. </p>
 </div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"/>
 </div><!-- contents -->
