@@ -15,28 +15,34 @@ Figure 1: SolidWorks model of the turret base with a built-in bevel gear for rot
 
  
 ![Alt text](Picture2.png)
+
 Figure 2: Pinion for the assembly 
 
  
 ![Alt text](Picture3.png)
+
 Figure 3: SolidWorks model of our Nerf gun mount  
 
  
 ![Alt text](Picture4.png)
+
 Figure 4: SolidWorks model of our camera mount  
 
    
 ![Alt text](Picture5.jpg)
+
 Figure 5. Trigger pull mechanism 
 
  
 ![Alt text](Picture6.jpg)
+
 Figure 6. Panning axis mechanism. DC motor to panning structure on rotatory bearing.  
 
  
 
  
 ![Alt text](Picture7.jpg)
+
 Figure 7. Entire hardware system 
 
 Other hardware implementations include the addition of an emergency stop button and voltage regulator for the servo. The voltage regulator was used to supply the servo with 6V without the need for a second voltage source. The circuit was implemented as shown below with the input as 12V from the voltage source and the output to the servo.  
@@ -46,6 +52,7 @@ Other hardware implementations include the addition of an emergency stop button 
  
  
 ![Alt text](Picture8.png)
+
 Source: https://www.mouser.com/datasheet/2/308/1/MC7800_D-2315963.pdf 
 
  
@@ -64,6 +71,7 @@ The main file was designed around the finite state machines seen below. There we
 
  
 ![Alt text](Picture9.jpg)
+
 Figure: 8. Finite State Machines for the two tasks. 
 
 Results: 
