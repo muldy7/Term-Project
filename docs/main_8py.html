@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.3.1</span>
+   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.3.2</span>
    </div>
    <div id="projectbrief">The following documented code implements a thermal imaging Nerf turret that is able to spin around, find, and shoot thermal targets for the ME-405 Term Project.</div>
   </td>
@@ -130,7 +130,6 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>THIS IS THE FILE ON THE NUCLEO BOARD. </p>
-<p>This file contains our main code to set-up the scheduler to run our robot.</p>
 <p>This file contains code that was stored on our group's Nucleo board to generate the motor step-response. This file was called by the code on our computer and read through the serial port to generate graphs of our step-response. The file below imports the three different classes we had previoulsy set up to run the motor. The code below sets ups the motor, encoder, and controller classes necassary with their various pins. After initilization, the code then starts a loop where it asks for a Kp, Kd, and setpoint value and then runs the controller with the given values in a motor step-response.</p>
 <p>Our motor_driver, pd_controller, and encoder_reader classes were importanted to the board as well. Copies of these files can be found in the source code.</p>
 <dl class="section author"><dt>Author</dt><dd>Abe Muldrow </dd>
@@ -138,11 +137,7 @@ Variables</h2></td></tr>
 Lucas Rambo </dd>
 <dd>
 Peter Tomson</dd></dl>
-<dl class="section date"><dt>Date</dt><dd>March 8th, 2024</dd></dl>
-<p>Although we were able use this file to run our code cooperatively, we found that the non scheduled code worked better for the competition. This scheduled code breaks the function into two tasks, the Thermal Camera Task and The Robot Controller Task.</p>
-<dl class="section author"><dt>Author</dt><dd>JR Ridgely, Abe Muldrow, Lucas Rambo, Peter Tomson </dd></dl>
-<dl class="section date"><dt>Date</dt><dd>February 29, 2024 </dd></dl>
-<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2015-2021 by JR Ridgely and released under the GNU Public License, Version 2. </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>March 8th, 2024 </dd></dl>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

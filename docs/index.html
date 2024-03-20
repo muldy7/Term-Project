@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.3.1</span>
+   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.3.2</span>
    </div>
    <div id="projectbrief">The following documented code implements a thermal imaging Nerf turret that is able to spin around, find, and shoot thermal targets for the ME-405 Term Project.</div>
   </td>
@@ -104,7 +104,7 @@ Files</h1>
 <h2><a class="anchor" id="main"></a>
 Main Project Code Files</h2>
 <p><a class="el" href="project__main_8py.html" title="-The Holy Turrent of Antioch-">project_main.py</a>: This file implements code to run our robot in a line-by-line code basis. We used this file from a laptop during the final tournament and testing. This code uses all the classes to turn the robot 180 degrees, wait for 5 seconds, capture a thermal image, move to the target, shoot the target, and then stop. This was written in a similar way to our scheduler, which is detailed, along with its states, below. Our scheduler has the ability to move the robot multiple times, which we had some trouble with perfecting before the tournament. The <a class="el" href="project__main_8py.html" title="-The Holy Turrent of Antioch-">project_main.py</a> just moves the robot once before shooting. Since the code is also not split into tasks it makes it easier to print all of the values used to find the target for easier tuning of the targetting algorithim.</p>
-<p>scheduler_main.py: This file implementated our robot using tasks and a scheduler. The code worked in a very similar way to project_main, except it splits the camera and the motor controlling into two seperate tasks. The explanation of these states and tasks is detailed in the 'Tasks and States' section below.</p>
+<p><a class="el" href="scheduler__main_8py.html" title="This file contains our main code to set-up the scheduler to run our robot.">scheduler_main.py</a>: This file implementated our robot using tasks and a scheduler. The code worked in a very similar way to project_main, except it splits the camera and the motor controlling into two seperate tasks. The explanation of these states and tasks is detailed in the 'Tasks and States' section below.</p>
 <h2><a class="anchor" id="classes"></a>
 Project Classes</h2>
 <p>The following classes are the ones written to for use in the creation and implementation of our robot.</p>
@@ -122,7 +122,7 @@ Test Code</h2>
 <p><a class="el" href="main_8py.html" title="THIS IS THE FILE ON THE NUCLEO BOARD.">main.py</a>: This file contains code that was stored on our group's Nucleo board to generate the motor step-response. This file was called by the code on our computer and read through the serial port to generate graphs of our step-response.</p>
 <h1><a class="anchor" id="states_sec"></a>
 States and Tasks</h1>
-<p>The Task and State diagram for our the code implemented in our scheduler_main.py file can be seen below. The two tasks were split up for one to control the motor of the robot and the other to control the robot. Code for these states can be seen in the scheduler_main.py code file.</p>
+<p>The Task and State diagram for our the code implemented in our <a class="el" href="scheduler__main_8py.html" title="This file contains our main code to set-up the scheduler to run our robot.">scheduler_main.py</a> file can be seen below. The two tasks were split up for one to control the motor of the robot and the other to control the robot. Code for these states can be seen in the <a class="el" href="scheduler__main_8py.html" title="This file contains our main code to set-up the scheduler to run our robot.">scheduler_main.py</a> code file.</p>
 <div class="image">
 <img src="state_space.png" alt=""/>
 </div>

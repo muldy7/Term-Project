@@ -8,5 +8,6 @@ var dir_68267d1309a1af8e8297ef4c3efbcdba =
     [ "pd_controller.py", "pd__controller_8py.html", "pd__controller_8py" ],
     [ "pid_controller.py", "pid__controller_8py.html", "pid__controller_8py" ],
     [ "project_main.py", "project__main_8py.html", null ],
+    [ "scheduler_main.py", "scheduler__main_8py.html", "scheduler__main_8py" ],
     [ "servo_driver.py", "servo__driver_8py.html", "servo__driver_8py" ]
 ];

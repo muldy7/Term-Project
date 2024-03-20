@@ -1,5 +1,5 @@
 """!
-@file main.py
+@file scheduler_main.py
     This file contains our main code to set-up the scheduler to run our robot.
     Although we were able use this file to run our code cooperatively, we found that the non scheduled code worked better for the competition. 
     This scheduled code breaks the function into two tasks, the Thermal Camera Task and The Robot Controller Task. 
