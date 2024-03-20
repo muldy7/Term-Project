@@ -1,7 +1,10 @@
 var searchData=
 [
-  ['get_5fcsv_0',['get_csv',['../classmlx__cam_1_1_m_l_x___cam.html#aeafb35245952d8a9eb2b1fd401126dfb',1,'mlx_cam::MLX_Cam']]],
-  ['get_5fhotspot_1',['get_hotspot',['../classmlx__cam_1_1_m_l_x___cam.html#a4c0e48618813912d382142a00c783da6',1,'mlx_cam::MLX_Cam']]],
-  ['get_5fimage_2',['get_image',['../classmlx__cam_1_1_m_l_x___cam.html#aa1343bb823dc68d1e017bd63dd393586',1,'mlx_cam::MLX_Cam']]],
-  ['get_5fimage_5fnonblocking_3',['get_image_nonblocking',['../classmlx__cam_1_1_m_l_x___cam.html#a36e29b74253348769b907e2485cc431e',1,'mlx_cam::MLX_Cam']]]
+  ['camera_0',['Task 2: Camera',['../index.html#task2',1,'']]],
+  ['camera_5ferror_1',['camera_error',['../classmlx__cam_1_1_m_l_x___cam.html#aaf4a4c4691ffb9dd4c6ca055c5667cc4',1,'mlx_cam::MLX_Cam']]],
+  ['classes_2',['Project Classes',['../index.html#classes',1,'']]],
+  ['code_3',['Test Code',['../index.html#test',1,'']]],
+  ['code_20files_4',['Main Project Code Files',['../index.html#main',1,'']]],
+  ['controller_5',['Controller',['../classcontroller_1_1_controller.html',1,'controller.Controller'],['../index.html#task1',1,'Task 1: Robot Controller']]],
+  ['controller_2epy_6',['controller.py',['../controller_8py.html',1,'']]]
 ];
