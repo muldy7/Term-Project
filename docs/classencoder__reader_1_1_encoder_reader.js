@@ -5,5 +5,6 @@ var classencoder__reader_1_1_encoder_reader =
     [ "zero", "classencoder__reader_1_1_encoder_reader.html#af9259e167113eab21ba5cccc6d01bae8", null ],
     [ "delta", "classencoder__reader_1_1_encoder_reader.html#ab3774bde9b8925fde22637c837a03a1d", null ],
     [ "pos", "classencoder__reader_1_1_encoder_reader.html#a2116ffc594585e1f73e00a0d102fa0ca", null ],
-    [ "prev_pos", "classencoder__reader_1_1_encoder_reader.html#a837fda4f9e1463b07542d66f0543b10c", null ]
+    [ "prev_pos", "classencoder__reader_1_1_encoder_reader.html#a837fda4f9e1463b07542d66f0543b10c", null ],
+    [ "value", "classencoder__reader_1_1_encoder_reader.html#aa9928860192aac0b5089b5b837b87d4e", null ]
 ];

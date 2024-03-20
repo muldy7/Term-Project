@@ -3,8 +3,9 @@
 #  This file was adjusted by our group to include a new function, get_hotspot 
 #  to use the raw data to find our target. Besides the get_hotspot function,
 #  the code was unaltered, and the detials of the code can be seen below. 
-#  The get_hotspot function was implemented in a similar way to the get_csv function.
-#  The new function our group used is detailed further below in the code. 
+#  The get_hotspot function was created by our group and was implemented
+#  in a similar way to the get_csv function. The new function our group used
+#  is detailed further below in the code. 
 # 
 #  RAW VERSION
 #  This version uses a stripped down MLX90640 driver which produces only raw
@@ -230,7 +231,7 @@ class MLX_Cam:
             self._getting_image = False
             return image
        
-    ## @brief   Using a previously found image, this function calculates the hotspot
+    ## @brief   Group created function. Using a previously found image, this function calculates the hotspot
     #          	location of a target in encoder tics. Our turret can then move to the target location.
     #  @details After using the get_image or get_image_nonblocking, this function puts the image values 
     #           into a 2D list array. The function then moves through the array column by and sums each
@@ -246,7 +247,10 @@ class MLX_Cam:
     #			tics for each degree of the camera. Implementation of this search function can be seen in more
     #			detail in the code. Finally, the calculated encoder tics can then be used in our turrets control loop
     # 			to find and shoot at the target. 
-    #  @returns An encoder tics value to move to the targets location 
+    #  @returns An encoder tics value to move to the targets location
+    #  @param array This is the image stored in an array
+    #  @param centroid Centroid is a true of false value for calculation of the centroid
+    #  @param limits limits for the image values, sets the scale of the array and pixel values
     def get_hotspot(self, array, centroid, limits=None):
 
         if limits and len(limits) == 2:
@@ -345,7 +349,10 @@ class MLX_Cam:
             # if the value is higher 15.5, we need to move the correct amount of encoder tics off of center to the right
             # if i_bar is less than 15.5, the target is to the left of the camera, and the motor needs a negative encoder tics value
             # to move to the left. This value can then be given to the controller as its new setpoint and a control loop can be ran.
-            # This should then point the target at the highest concentration of temperature, which is hopefully our target. 
+            # This should then point the target at the highest concentration of temperature, which is hopefully our target.
+            
+            ## camera_error
+            # encoder tics value for the turret to use to move to the location of the target
             self.camera_error = (-15.5+self.i_bar)*k_degree
             
         else:	# calc with just i_max if centroid = False

@@ -14,5 +14,6 @@ var classmlx__cam_1_1_m_l_x___cam =
     [ "_image", "classmlx__cam_1_1_m_l_x___cam.html#a26bbcb9ea8bb48ee8e622f2b1d17b327", null ],
     [ "_pattern", "classmlx__cam_1_1_m_l_x___cam.html#a46c9b6e794cd1a9fa96f3b1cbd2b69fe", null ],
     [ "_subpage", "classmlx__cam_1_1_m_l_x___cam.html#a0ffe29441af6e3cd77d92baf8ff9dbff", null ],
-    [ "_width", "classmlx__cam_1_1_m_l_x___cam.html#a1abc3298153b1808855811670b9a428c", null ]
+    [ "_width", "classmlx__cam_1_1_m_l_x___cam.html#a1abc3298153b1808855811670b9a428c", null ],
+    [ "camera_error", "classmlx__cam_1_1_m_l_x___cam.html#aaf4a4c4691ffb9dd4c6ca055c5667cc4", null ]
 ];

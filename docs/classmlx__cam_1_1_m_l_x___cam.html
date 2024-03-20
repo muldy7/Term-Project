@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.2.0</span>
+   <div id="projectname">ME-405 Term Project<span id="projectnumber">&#160;0.2.1</span>
    </div>
    <div id="projectbrief">The following documented code implements a thermal imaging Nerf turret that is able to spin around, find, and shoot thermal targets for the ME-405 Term Project.</div>
   </td>
@@ -126,7 +126,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a36e29b74253348769b907e2485cc431e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an image from an MLX90640 camera in a non-blocking way.  <br /></td></tr>
 <tr class="separator:a36e29b74253348769b907e2485cc431e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c0e48618813912d382142a00c783da6" id="r_a4c0e48618813912d382142a00c783da6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c0e48618813912d382142a00c783da6">get_hotspot</a> (self, array, centroid, limits=None)</td></tr>
-<tr class="memdesc:a4c0e48618813912d382142a00c783da6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Using a previously found image, this function calculates the hotspot location of a target in encoder tics.  <br /></td></tr>
+<tr class="memdesc:a4c0e48618813912d382142a00c783da6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Group created function.  <br /></td></tr>
 <tr class="separator:a4c0e48618813912d382142a00c783da6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -145,6 +145,7 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ab6fbcb02977bdcef9b10ae60d7210c61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf4a4c4691ffb9dd4c6ca055c5667cc4" id="r_aaf4a4c4691ffb9dd4c6ca055c5667cc4"><td class="memItemLeft" align="right" valign="top"><a id="aaf4a4c4691ffb9dd4c6ca055c5667cc4" name="aaf4a4c4691ffb9dd4c6ca055c5667cc4"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>camera_error</b></td></tr>
+<tr class="memdesc:aaf4a4c4691ffb9dd4c6ca055c5667cc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">camera_error encoder tics value for the turret to use to move to the location of the target <br /></td></tr>
 <tr class="separator:aaf4a4c4691ffb9dd4c6ca055c5667cc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
@@ -387,9 +388,17 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Using a previously found image, this function calculates the hotspot location of a target in encoder tics. </p>
-<p>Our turret can then move to the target location.</p>
+<p>Group created function. </p>
+<p>Using a previously found image, this function calculates the hotspot location of a target in encoder tics. Our turret can then move to the target location.</p>
 <p>After using the get_image or get_image_nonblocking, this function puts the image values into a 2D list array. The function then moves through the array column by and sums each column into a single list. Moving through the list certain values are ignored to filter values so we can refine our target location better. Currently, values under 500 are ignored and values in the bottom 7 rows are also ignored. After summing the values, the function searches for the highest sum in the list. For easier target locating, the code doesn't look in the smallest and largest 10 columns. After finding the largest value, the function then uses the index of the largest value to calculate a centroid of our target location. The centroid is calculated from the max index and the two indexes to the right and left of the max index, along with their respective values. The centroid index, or i_bar, is then used to calculate the amount of encoder tics that the turret would have to move to point at the calculated i_bar. This is done by using the relative tics for each degree of the camera. Implementation of this search function can be seen in more detail in the code. Finally, the calculated encoder tics can then be used in our turrets control loop to find and shoot at the target. </p><dl class="section return"><dt>Returns</dt><dd>An encoder tics value to move to the targets location </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">array</td><td>This is the image stored in an array </td></tr>
+    <tr><td class="paramname">centroid</td><td>Centroid is a true of false value for calculation of the centroid </td></tr>
+    <tr><td class="paramname">limits</td><td>limits for the image values, sets the scale of the array and pixel values </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

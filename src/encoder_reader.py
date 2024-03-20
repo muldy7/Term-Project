@@ -65,7 +65,8 @@ class EncoderReader:
         to detect whether there has been an under or overflow since the last encoder read. 
         The function then adjust the value in case of an under/overflow to read the correct position change value from the encoder. 
         """
-
+        ## value
+        # variable for storing the current position 
         self.value = self.enc_timer.counter()   # store the current position in self.value
         self.delta=self.value-self.prev_pos # calculate delta
     
