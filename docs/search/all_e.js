@@ -10,5 +10,5 @@ var searchData=
   ['set_5fpos_7',['set_pos',['../classservo__driver_1_1_servo_driver.html#ae426bb9d5bd887bdb1839164bf81ac4e',1,'servo_driver::ServoDriver']]],
   ['set_5fsetpoint_8',['set_setpoint',['../classcontroller_1_1_controller.html#a5194b54cc1328dd8d36fb60108d409f4',1,'controller.Controller.set_setpoint()'],['../classpd__controller_1_1_p_d___controller.html#ac4f540370b7bc3961450bc142e13d120',1,'pd_controller.PD_Controller.set_setpoint()'],['../classpid__controller_1_1_p_i_d___controller.html#ac465fa74279b4f0a7919c2d0533d2456',1,'pid_controller.PID_Controller.set_setpoint()']]],
   ['states_20and_20tasks_9',['States and Tasks',['../index.html#states_sec',1,'']]],
-  ['step_5fresponse_10',['step_response',['../classpd__controller_1_1_p_d___controller.html#a0baa83e6a0f42bd9caf0fda9bf1cde92',1,'pd_controller::PD_Controller']]]
+  ['step_5fresponse_10',['step_response',['../classpd__controller_1_1_p_d___controller.html#a0baa83e6a0f42bd9caf0fda9bf1cde92',1,'pd_controller.PD_Controller.step_response()'],['../gui__tuning_8py.html#aed13a4497ad39b5c3d6abc4be5d93acb',1,'gui_tuning.step_response()']]]
 ];

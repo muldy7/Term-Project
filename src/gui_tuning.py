@@ -1,5 +1,5 @@
 """!
-@file lab3_main.py
+@file gui_tuning.py
 This file contains code to run program on a laptop or desktop which creates a user interface
 that can send a signal to the microcontroller to run a step response. The user can set a Kp, Kd, and Setpoint
 values and send that to a microcontroller where a Controller Object will read and interpret the data

@@ -7,5 +7,6 @@ var searchData=
   ['tasks_4',['States and Tasks',['../index.html#states_sec',1,'']]],
   ['term_20project_20main_20page_5',['ME-405 Term Project Main Page',['../index.html',1,'']]],
   ['test_20code_6',['Test Code',['../index.html#test',1,'']]],
-  ['test_5fmlx_5fcam_7',['test_MLX_cam',['../mlx__cam_8py.html#a412d461b290a706127bf8dd299b0635f',1,'mlx_cam']]]
+  ['test_5fmlx_5fcam_7',['test_MLX_cam',['../mlx__cam_8py.html#a412d461b290a706127bf8dd299b0635f',1,'mlx_cam']]],
+  ['tk_5fmatplot_8',['tk_matplot',['../gui__tuning_8py.html#a19c1718e0baeafda3978f973a18aae55',1,'gui_tuning']]]
 ];

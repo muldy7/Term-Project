@@ -81,15 +81,18 @@
  * Figure 01: Task and State Diagram for our Robot
  * 
  * \subsection task1 Task 1: Robot Controller
- * State 0: INIT
+ * State 0 INIT:
+ * 
  * This state initializes the robot. This means creating all the necessary flags and classes
  * 
- * State 1: Spin 180
+ * State 1 Spin 180:
+ * 
  * This state always occurs after INIT. This states uses the controller to turn the robot 180 degrees 
  * to face the target. This is done with the pd_controller, encoder, and motor_driver. Once the
  * controller error is small enough the robot stops and moves to the next state.
  * 
- * State 2: Control
+ * State 2 Control:
+ * 
  * This state takes the setpoint values from the get_hotspot function calculated by the Thermal Camera  
  * Task and moves the robot to the desired location. This is done by setting a shared inter-task 
  * variable img_flg to zero. This tells the Camera tasks it is ready for a new image. Once the 
@@ -100,26 +103,31 @@
  * passed it stops moving and transitions to the next state. With the scheduler, the robot can move
  * multiple times, depending on how much the target has moved, before FREEZE is called. 
  * 
- * State 3: Shoot
+ * State 3 Shoot:
+ * 
  * This state simply uses the servo to pull the trigger and shoot the target. This is done by setting
  * the servo to a position that will pull the trigger and then returning the servo to its default 
  * position. After the trigger has been pulled the code transitions to the next state.
  * 
- * State 4: Return
+ * State 4 Return:
+ * 
  * This code uses the same control loop as the 180 spin to spin the robot back to zero. 
  * This is done by just sending the controller a negative value of the value used to spin 
  * the robot 180 at the beginning of a duel.
  * 
- * State 5: Stop the Robot
+ * State 5 Stop the Robot:
+ * 
  * This state stops the robots movement and then prints some values for us to verify the final target 
  * location. After this state the code is then exited. 
  * 
  * \subsection task2 Task 2: Camera
- * State 0: INIT
+ * State 0 INIT:
+ *
  * This state initializes the camera with code from mlx_cam. This uses the I2C functionality and ports
  * to control the thermal camera.
  * 
- * State 1: Take a Picture
+ * State 1 Take a Picture:
+ * 
  * This photo waits for the inter-task variable image_flag to equal zero. Once the flag is lowered the 
  * state takes a picture, uses the get_hotspot command to find the location of the target in encoder 
  * tics, and then puts that value in the share. The image_flag is then raised to tell the other task
