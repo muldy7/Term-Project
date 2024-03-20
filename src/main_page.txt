@@ -37,10 +37,10 @@
  *
  * pd_controller.py: This file creates a class that implements a PD controller that we 
  * used to control our robot. The PD control was used in all elements of our motor movement
- * in our main code to spin the robot and find targets. There are also a controller.py and  
- * pid_controller.py file that work in a similar way but were not used on our final robot. 
+ * in our main code to spin the robot and find targets. There are also a controller.py and pid_controller.py
+ * file that work in a similar way but were not used on our final robot. 
  * 
- * encoder_reader.py: This file creates an encoder class that allows use to use the encoder on the  
+ * encoder_reader.py: This file creates an encoder class that allows use to use the encoder on the
  * motor we used. The encoder class allows use to measure the movement of the motor for calculation of 
  * our motor's movement that can be used along with the previous pd_controller to control the robot. 
  * 
@@ -93,7 +93,7 @@
  * 
  * State 2 Control:
  * 
- * This state takes the setpoint values from the get_hotspot function calculated by the Thermal Camera  
+ * This state takes the setpoint values from the get_hotspot function calculated by the Thermal Camera
  * Task and moves the robot to the desired location. This is done by setting a shared inter-task 
  * variable img_flg to zero. This tells the Camera tasks it is ready for a new image. Once the 
  * hotspot has been calculated, the value is given to the controller and robot moves to that location.
@@ -131,7 +131,7 @@
  * This photo waits for the inter-task variable image_flag to equal zero. Once the flag is lowered the 
  * state takes a picture, uses the get_hotspot command to find the location of the target in encoder 
  * tics, and then puts that value in the share. The image_flag is then raised to tell the other task
- * there has been a new setpoint value calculated. The state then waits for the image_flag to be  
+ * there has been a new setpoint value calculated. The state then waits for the image_flag to be
  * lowered again before taking a new image. This is done before the other task exits. 
  *
  */
