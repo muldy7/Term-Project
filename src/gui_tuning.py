@@ -1,18 +1,24 @@
 """!
 @file lab3_main.py
 This file contains code to run program on a laptop or desktop which creates a user interface
-that can send a signal to the microcontroller to run a step response. The user will set a given Kp
-value and send that to a microcontroller where a Controller Object will read and interpret the data
-from the motor.
+that can send a signal to the microcontroller to run a step response. The user can set a Kp, Kd, and Setpoint
+values and send that to a microcontroller where a Controller Object will read and interpret the data
+from the motor. This code was used to tune our robot for different step responses during its use. Using the code below 
+we found the best Kp and Kd values for the 180 degree turn, which we found to be different than the optimal gain values
+for smaller turns that would occur while finding a target. This testing and gain values are documented in our README file, and where implemented
+in our main project files. 
 
-Can send Kp, Kd, and a setpoint to test our motor moving at different setpoints
-The code used in main.py for our microcontroller can be found in the nucleo_main.py file in our Doxygen and GitHub documentation. 
+This file is based on the GUI file from Lab 3, but with extra text entries for Kd and Setpoint. Implementation of the code is documented below.
+
+The code used in main.py on our microcontroller can be found in the main.py file in our Doxygen and GitHub documentation. 
 
 This file is uses code from lab0example.py file on on Cantvas and an example found at:
 https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_tk_sgskip.html
 
-@author Abe Muldrow, Lucas Rambo, Peter Tomson
-@date February 22th, 2024, Original program, based on example from above listed sources
+@author Abe Muldrow
+@author Lucas Rambo
+@author Peter Tomson
+@date March 2nd, 2024, Original program, based on example from above listed sources
 """
 
 # imports 
@@ -28,7 +34,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2Tk)
     
 
-def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	# give it entry and entry2 for entry.get()
+def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry, entry2, entry3):	
     """!
     This function retrieves the data from the microcontroller to create the plot of the step response.
     The function first sens ASCII digits to the controller to stop any running program, get the controller into
@@ -39,7 +45,9 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
     @param plot_canvas The plot canvas, also supplied by Matplotlib
     @param xlabel The label for the plot's horizontal axis
     @param ylabel The label for the plot's vertical axis
-    @param entry text box that contains The Kp value from the user.
+    @param entry text box that contains the Kp value from the user
+    @param entry2 text box that contains the Kd value from the user
+    @param entry3 text box that contains the setpoint value from the user
     """
     # set the serial port for reading from the microcontroller
     ser = serial.Serial("COM3", 9600)
@@ -56,14 +64,16 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
     cont = 1	# variable for running the read function
     time=[]	 	# list to store our time values
     pos=[]	# list to store our volt values
-    start=0 #boolean to show start of step response data
+    start=0 #b oolean to show start of step response data
     enter = 0
     # while cont is true read values from the serial port
     
     # using entry.get() will retrieve the current number in the entry box
+    # retrieve the gain and setpoint values
     kp = entry.get()
-    kd = entry2.get()	# added a second entry
+    kd = entry2.get()	
     set_point = entry3.get()
+
     try:
         float(kp)
     except ValueError:  # test if the user doesn't enter a valid number
@@ -75,6 +85,8 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
     while cont == 1:
         value = ser.readline().decode('utf-8').strip()  # read from the nucleo board
         if value == 'awaiting input' and enter == 0:    # wait till the board prints 'awaiting input'
+            # after awaiting input, the main.py code on the board has three different value() text entries
+            # the three entries in the main.py code change the values based on values from the user 
             ser.write(bytes(str(kp).encode('utf-8')))	# this is where kp is used, sent to the input function waiting on the board
             ser.write(bytearray('\x0D','ascii'))    # send an enter to the board
             ser.write(bytes(str(kd).encode('utf-8')))	# this is where kd is used, sent to the input function waiting on the board
@@ -84,14 +96,14 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
             print('starting a step response')
             enter = 1
             
-        if value == 'start':    # start signals the start of step-response values from the board
+        if value == 'start':    # start string signals the start of step-response values from the board
             start=1
             print("reading!")
         while start==1:
             value = ser.readline().decode('utf-8').strip()  # read values
             print(value)
             if value == 'end':	# once end is printed by the microcontroller stop reading values
-                start = 0
+                start = 0   # change the booleans
                 cont=0
                 break
             else:
@@ -114,6 +126,7 @@ def step_response(plot_axes, plot_canvas, xlabel, ylabel, entry,entry2,entry3):	
     color1 = random.choice(colors)  # create a random color choice
 
     # plot the step response
+    # add the Kp, Kd, and Setpoint values to the plot
     plot_axes.plot(time, pos, label = 'Measured Response Data, kp: '+ kp + ' kd: ' + kd + ' sp: ' + set_point, color = color1, marker = '.' )   
     plot_axes.set_xlabel(xlabel)
     plot_axes.set_ylabel(ylabel)
@@ -161,7 +174,7 @@ def tk_matplot(plot_function, xlabel, ylabel, title):
     # the eneter button takes the kp value and sends it to run
     button_enter = tkinter.Button(master=tk_root,
                                   text="Run Step Response", command=lambda: plot_function(axes, canvas,
-                                                              xlabel, ylabel, entry, entry2,entry3))
+                                                              xlabel, ylabel, entry, entry2, entry3))
    
     button_quit = tkinter.Button(master=tk_root,
                                  text="Quit",

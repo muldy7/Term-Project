@@ -52,7 +52,7 @@ class EncoderReader:
         ## positon
         # absolute total position of the motor from the encoder
         # this variable will hold the total counts and will increase or decrease based on the direction of the motor
-        self.pos=0	# absolute total position
+        self.pos=0	# absolute total position, using encoderX.pos in the main code will result in a value of total encoder tics
         ## previous position 
         # this variable holds the previous number from each encoder read
         self.prev_pos=0

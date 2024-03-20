@@ -1,15 +1,15 @@
 '''!
 @file pd_controller.py
 
-This file attempts to implement pd control of our device with some small changes to the previous controller class
+This file implements pd control of our device with some small changes to the previous controller class. 
+The Kd control is implemented with an addition to the control equation, along with code to calculate the
+previous and change in error for Kd implementation. 
 
 This file contains code to create a controller class that allows us to create a control loop to run our motor.
 This controller class when used in conjuction with our motor_driver and encoder_reader classes allow use to implement 
-closed loop porportional control of our motor. The class below includes function to init and run out controller, 
-along with setting the setpoint and Kp value of the control loop. 
-
-# would be worth it to explain the pi controller too, or maybe be cool and put them in one document?
-# idk might be better to have a controller, pd_controller, and a PID_controller class
+closed loop porportional and derivative control of our motor. The class below includes function to init and run our controller, 
+along with setting the setpoint, Kd, and Kp value of the control loop. An additional function is included to reset the controller
+values for multiple control loops during our robot's use. 
 
 @author Abe Muldrow
 @author Lucas Rambo
@@ -19,21 +19,21 @@ along with setting the setpoint and Kp value of the control loop.
 
 class PD_Controller:
     
-    def __init__ (self, setpoint, Kp, Kd,read_fun):
+    def __init__ (self, setpoint, Kp, Kd, read_fun):
         """! 
         Creates a Controller Object by initializing a setpoint (a desired location for the motor)
-        a Kp value given by a user, and a encoder read function from an Encoder Object.
+        a Kp value given by a user, a Kd value given by a user, and a encoder read function from an Encoder Object.
 
         @param setpoint This is a location for the motor in units of encoder counts.
-        @param Kp A control gain set by the user. This is used to produce the actuation signal.
+        @param Kp A control gain set by the user. This is used to produce the actuation signal for the motor.
+        @param Kd a controller gain set by the user. This is used for the controller's Kd implementation. 
         @param read_fun This is a read function from an Encoder Object.
 
-        @param Kd this is the derivative gain for our controller
         """
-        self.Kp=Kp
-        self.setpoint=setpoint
-        self.output_fun=read_fun
-        self.pos_output=[]
+        self.Kp = Kp
+        self.setpoint = setpoint
+        self.output_fun = read_fun
+        self.pos_output = []
         self.Kd = Kd
 
         # values for Kd control
@@ -46,13 +46,18 @@ class PD_Controller:
         self.prev_err = 0 # previous error value for delta_err calculation
 
         self.err = 51 # for initilization, need an initial error for the control loop
-        self.store = True    # for storing values
+        self.store = True    # for storing values, store values if self.True == True
         
-    def run(self,meas_output):
+    def run(self, meas_output):
         """!
-        This function runs the controller and changes the PWM for the next cycle.
+        This function runs the controller and changes the PWM for the next cycle. 
+        The control loop takes the input encoder tics from meas_output and runs it through the control loop.
+        This control loop includes proportional and derivative control, meaning the Kp gain is multiplied by the current error
+        and the Kd values is multiplied by the change in error. The products are then added together and the resulting value
+        is the PWM sent to the motor. 
     
-        @param meas_output This value is the previous measured output.
+        @param meas_output This value is the previous measured output input to the controller function. 
+                           The value of meas_output is in encoder tics and tracks the current position of the motor. 
         """
         # create the equation that runs the control loop
         # calculate error
@@ -64,25 +69,27 @@ class PD_Controller:
         # calculate the change in time, for Kd
         #self.curr_time = utime.time()
         #self.T = self.curr_time - self.prev_time
-        self.T = 0.01 # rough estimate
+        self.T = 0.01 # rough estimate, in ms, of the board's trigger rate
 
         # calculate PWM
-        self.PWM = self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    # it should technically be possible to add a integral controller to this as well but I dont know what the intergal of position is 
-        
+        # the equation below represents the control loop to calculate the required motor PWM 
+        self.PWM = self.Kp*(self.err) + (self.Kd*(self.delta_err/self.T))    
+
         # store values for Kd calculation
         self.prev_err = self.err
         #self.prev_time = utime.time()
 
         # store values for graphing
-        if self.store == True:
+        if self.store == True:  # if self.store == True store values for step-response graphing
             self.pos_output.append(meas_output)
         if len(self.pos_output) >= 1000:    # need to stop storing values if there are too many
-            self.store = False   
+            self.store = False  # set store to false
         
     
     def set_setpoint(self,setpoint):
         """!
-        This function sets the setpoint for the controller object.
+        This function sets the setpoint for the controller object. The setpoint is in encoder tics and used in the control loop to 
+        calculate error. 
     
         @param setpoint This is a location for the motor in units of encoder counts.
         """
@@ -90,7 +97,7 @@ class PD_Controller:
         
     def set_Kp(self,Kp):
         """!
-        This function sets the Kp value for the controller object.
+        This function sets the Kp value for the controller object. The Kp is the proportional gain used in the control loop. 
     
         @param Kp A control gain set by the user. This is used to produce the actuation signal.
         """
@@ -98,17 +105,21 @@ class PD_Controller:
 
     def set_Kd(self,Kd):
         """!
-        This function sets the Kd value for the controller object.
+        This function sets the Kd value for the controller object. The Kd value is the derivative gain used in the control loop. 
     
         @param Kd A control gain set by the user. This is used to produce the actuation signal.
         """
         self.Kd=Kd
         
     def step_response(self):
-        print('start')
+        '''!
+        This function allows the stored values from the control loop to be plotted for a step-response graph. 
+        This function was used in the main.py file along with our gui code to plot different step-responses for testing. 
+        '''
+        print('start')  # print 'start' to tell the computer to be ready for values
         for i in range(len(self.pos_output)):
-            print(i*3.333,self.pos_output[i])			# does a step about every 3 miliseconds
-        print('end')
+            print(i*3.333,self.pos_output[i]) # print each output value along with its time value, does a step about every 3 miliseconds
+        print('end')    # print 'end' to tell the computer the values are ended
         
     def reset_loop(self):
         """!
