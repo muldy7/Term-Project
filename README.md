@@ -39,7 +39,7 @@ Figure 6. Panning axis mechanism. DC motor to panning structure on rotatory bear
 ![Alt text](Picture7.jpg)
 Figure 7. Entire hardware system 
 
-Other hardware implementations include the addition of an emergency stop button and voltage regulator for the Arduino. The voltage regulator was used to supply the servo with 6V without the need for a second voltage source. The circuit was implemented as shown below with the input as 12V from the voltage source and the output to the servo.  
+Other hardware implementations include the addition of an emergency stop button and voltage regulator for the servo. The voltage regulator was used to supply the servo with 6V without the need for a second voltage source. The circuit was implemented as shown below with the input as 12V from the voltage source and the output to the servo.  
 
  
 
