@@ -1,5 +1,12 @@
 ## @file mlx_cam.py
 # 
+#  This file was adjusted by our group to include a new function, get_hotspot 
+#  to use the raw data to find our target. Besides the get_hotspot function,
+#  the code was unaltered, and the detials of the code can be seen below. 
+#  The get_hotspot function was created by our group and was implemented
+#  in a similar way to the get_csv function. The new function our group used
+#  is detailed further below in the code. 
+# 
 #  RAW VERSION
 #  This version uses a stripped down MLX90640 driver which produces only raw
 #  data, not calibrated data, in order to save memory.
@@ -19,6 +26,7 @@
 # 
 #  @author mwerezak Original files, Summer 2022
 #  @author JR Ridgely Added simplified wrapper class @c MLX_Cam, January 2023
+#  @author Abe Muldrow, Lucas Rambo, Peter Tomson
 #  @copyright (c) 2022-2023 by the authors and released under the GNU Public
 #      License, version 3.
 
@@ -223,7 +231,26 @@ class MLX_Cam:
             self._getting_image = False
             return image
        
-    # abe is going to make this to try and get the total value from the camera, instead of going through the CSV
+    ## @brief   Group created function. Using a previously found image, this function calculates the hotspot
+    #          	location of a target in encoder tics. Our turret can then move to the target location.
+    #  @details After using the get_image or get_image_nonblocking, this function puts the image values 
+    #           into a 2D list array. The function then moves through the array column by and sums each
+    #           column into a single list. Moving through the list certain values are ignored to filter 
+    #           values so we can refine our target location better. Currently, values under 500 are ignored
+    #           and values in the bottom 7 rows are also ignored. After summing the values, the function
+    #           searches for the highest sum in the list. For easier target locating, the code doesn't look in the 
+    #			smallest and largest 10 columns. After finding the largest value, the function then uses the index of
+    #			the largest value to calculate a centroid of our target location. The centroid is calculated from the
+    #			max index and the two indexes to the right and left of the max index, along with their respective values.
+    #			The centroid index, or i_bar, is then used to calculate the amount of encoder tics that
+    #			the turret would have to move to point at the calculated i_bar. This is done by using the relative
+    #			tics for each degree of the camera. Implementation of this search function can be seen in more
+    #			detail in the code. Finally, the calculated encoder tics can then be used in our turrets control loop
+    # 			to find and shoot at the target. 
+    #  @returns An encoder tics value to move to the targets location
+    #  @param array This is the image stored in an array
+    #  @param centroid Centroid is a true of false value for calculation of the centroid
+    #  @param limits limits for the image values, sets the scale of the array and pixel values
     def get_hotspot(self, array, centroid, limits=None):
 
         if limits and len(limits) == 2:
@@ -238,9 +265,9 @@ class MLX_Cam:
         image_arr = [[' ' for i in range(cols)] for j in range(rows)]	# create an image array
         
         # add the pixel value from the image to the image 2D list to store values for calculations
-        for row in range(self._height):
-            for col in range(self._width):
-                pix = int((array[row * self._width + (self._width - col - 1)]
+        for row in range(self._height):	# for each row
+            for col in range(self._width):	# for each column
+                pix = int((array[row * self._width + (self._width - col - 1)]	# calculate the pixel value just like get_csv
                           + offset) * scale)
                 
                 image_arr[row][col] = pix	# add each pixel to the array
@@ -253,9 +280,9 @@ class MLX_Cam:
             total = 0	# create a total for each column
             for j in range(self._height): # go through each row, k
                 if j >= 17:	# set a vertical limit to ignore the bottom rows, can limit a top portion of the rows as well if thats helpful 
-                    total += 1
-                elif float(image_arr[j][i]) <= 500: # eliminate noise from the camera image, all values less than 200
-                    total += 1
+                    total += 1	# ignore, or just add a vluae of 1 to the total 
+                elif float(image_arr[j][i]) <= 500: # eliminate noise from the camera image, all values less than 500 are ignored 
+                    total += 1	# ignore
                 else:
                     total += float(image_arr[j][i])	# add the current value from image_arr to the total 
             self.sums.append(total)	# add the value of each column to sums
@@ -266,7 +293,7 @@ class MLX_Cam:
        
         # enumerate through self.sums to test for the larget value
         for idx,val in enumerate(self.sums):
-            if idx <= 10 or idx >= 20:	# ignore values too far to the left or right 	# horizontal limit
+            if idx <= 10 or idx >= 20:	# ignore values too far to the left or right as a horizontal limit
                 continue
             if val > self.max_value:	# find the largest value in the list
                self.max_index = idx	# store the index of the biggest value, this gives us degree location of our target
@@ -295,16 +322,20 @@ class MLX_Cam:
         # encoder tic/camera column constant
         # this value is used for the encoder tics calculation
         k_degree = 62.64 # this is the amount of encoder ticks per degree of MLX cam
-                         # the MLX cam is 55 degrees wide, width of 32, 1.72 degrees per width, then 6600 is one full rotation of our bot
+                         # the MLX cam is 55 degrees wide, width of 32, means 1.72 degrees per width.
+                         # 6560 encoder tics is one full rotation of our bot, which means 6560 tic/180 degrees
+                         # this value multiplied by 1.72 results in the constant 62.64 tics/degree value
                        
         # do the centroid calculation if centroid = True
         if centroid == True:	# calc centroid if centroid equals true
             
                 
-            # sum the indexes multiplied by their avg value
+            # sum the indexes multiplied by their avg value for centroid calculation
+            # this calculation represents the numerator of the centroid equation
             self.i_bar = ((self.max_index*(self.max_value)) + ((i_l)*(self.sums[i_l]))) + (i_r)*(self.sums[i_r]) + (i_r + 1)*(self.sums[i_r + 1]) + (i_l - 1)*(self.sums[i_l - 1])
             
             # divide by the sums of their average values
+            # this finds the final centroid which results in a camera index value of the higest concentration of temperature values.
             self.i_bar = self.i_bar/(self.max_value + self.sums[i_r] + self.sums[i_l] + self.sums[i_r + 1] + self.sums[i_l - 1])
            
             # print values for testing
@@ -314,6 +345,14 @@ class MLX_Cam:
             
             # calculate camera_error
             # 15.5 is the middle of the camera, multiply by the K_degree constant
+            # if the i_bar value equals 15.5, this would mean the camera is pointing straight at our target, and the gun should not move
+            # if the value is higher 15.5, we need to move the correct amount of encoder tics off of center to the right
+            # if i_bar is less than 15.5, the target is to the left of the camera, and the motor needs a negative encoder tics value
+            # to move to the left. This value can then be given to the controller as its new setpoint and a control loop can be ran.
+            # This should then point the target at the highest concentration of temperature, which is hopefully our target.
+            
+            ## camera_error
+            # encoder tics value for the turret to use to move to the location of the target
             self.camera_error = (-15.5+self.i_bar)*k_degree
             
         else:	# calc with just i_max if centroid = False
@@ -397,7 +436,8 @@ def test_MLX_cam():
 
     print ("Done.")
     
-# abe added this function to try and average the camera data 
+# Added test function for building get_hotspot and testing of get_hotspot
+# the function of this code was copied from the test_MLX function above
 def camera_data():
 
     import gc

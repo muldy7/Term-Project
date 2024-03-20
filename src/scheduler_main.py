@@ -1,5 +1,5 @@
 """!
-@file main.py
+@file scheduler_main.py
     This file contains our main code to set-up the scheduler to run our robot.
     Although we were able use this file to run our code cooperatively, we found that the non scheduled code worked better for the competition. 
     This scheduled code breaks the function into two tasks, the Thermal Camera Task and The Robot Controller Task. 
@@ -27,6 +27,12 @@ from machine import Pin, I2C
 def task1_fun(shares):
     """!
     Task that controls the motion of the robot using the motor controlling the pan axis and the servo to pull the trigger. 
+    The task uses the share for the image_flag value and new values of camera_error used in the control loop. 
+    Each camera_error tells the device a new location to spin to for finding the target. 
+    This task sets image_flag to 1 initially so no pictures are taken, then sets to zero every time the device has moved to
+    the new setpoint. This allows the device to move multiple times and adjust before FREEZE is called. After 5 seconds 
+    has passed the code then transitions to pull the trigger. 
+
     @param shares A list holding the share and queue used by this task
     """
     # Get references to the share and queue which have been passed to this task
@@ -236,7 +242,9 @@ def task1_fun(shares):
 # TASK 2: CAMERA TASK
 def task2_fun(shares):
     """!
-    Task for taking a picture 
+    Task for taking a picture. The task takes a picture every time the image_flag from the share is 0. The camera then sets the 
+    flag to 1 to tell the control task that there is a new image with a camera_error value for moving the device. 
+
     @param shares A tuple of a share and queue from which this task gets data
     """
     # Get references to the share and queue which have been passed to this task

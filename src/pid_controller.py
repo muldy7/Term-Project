@@ -1,9 +1,9 @@
 '''!
-@file pd_controller.py
+@file pid_controller.py
 
-This file attempts to implement pid control of our device with some small changes to the previous controller class
+This file attempts to implement pid control of our device with some small changes to the previous controller class.
 
-I guess we could put all three controllers in ONE file that holds the three different encoder classes?
+This file was not used in the final implementation of our device but allows for the possibility of integral control to be added. 
 
 This file contains code to create a controller class that allows us to create a control loop to run our motor.
 This controller class when used in conjuction with our motor_driver and encoder_reader classes allow use to implement 
@@ -31,7 +31,7 @@ class PID_Controller:
         @param read_fun This is a read function from an Encoder Object.
 
         @param Kd this is the derivative gain for our controller
-        @param Ki
+        @param Ki this is the integral gain for our controller
         """
         self.Kp=Kp
         self.Kd = Kd
@@ -43,11 +43,11 @@ class PID_Controller:
         self.delta_err = 0 # this store the change in error for derivative control, the first value should be error
         self.err = 0
         self.prev_err = 0 # previous error value for delta_err calculation
-        self.tot_err = 0
+        self.tot_err = 0 # sum of total error used for integral control
         
     def run(self,meas_output):
         """!
-        This function runs the controller and changes the PWM for the next cycle.
+        This function runs the controller and changes the PWM for the next cycle. This control loop includes integral control implementation. 
     
         @param meas_output This value is the previous measured output.
         """
@@ -57,7 +57,7 @@ class PID_Controller:
         self.PWM=self.Kp*(self.err) + self.Kd*(self.delta_err/self.T) + self.Ki*(self.tot_err*self.T)
         self.pos_output.append(meas_output) # store value for printing
         self.prev_err = self.err    # store this error as previous error
-        self.tot_err += self.err    # add the last error to total error
+        self.tot_err += self.err    # add the last error to total error for integral control
     
     def set_setpoint(self,setpoint):
         """!
@@ -108,8 +108,7 @@ class PID_Controller:
         self.tot_err = 0 # reset tot_err
 
         # could also have it call encoderX.zero() so it's done in one function?
-        self.output_fun.zero()  # we can try and see if works
-
+        #self.output_fun.zero()  
         # could add setpoint here as well?
 
 

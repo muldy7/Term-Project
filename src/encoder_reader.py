@@ -52,7 +52,7 @@ class EncoderReader:
         ## positon
         # absolute total position of the motor from the encoder
         # this variable will hold the total counts and will increase or decrease based on the direction of the motor
-        self.pos=0	# absolute total position
+        self.pos=0	# absolute total position, using encoderX.pos in the main code will result in a value of total encoder tics
         ## previous position 
         # this variable holds the previous number from each encoder read
         self.prev_pos=0
@@ -65,7 +65,8 @@ class EncoderReader:
         to detect whether there has been an under or overflow since the last encoder read. 
         The function then adjust the value in case of an under/overflow to read the correct position change value from the encoder. 
         """
-
+        ## value
+        # variable for storing the current position 
         self.value = self.enc_timer.counter()   # store the current position in self.value
         self.delta=self.value-self.prev_pos # calculate delta
     
